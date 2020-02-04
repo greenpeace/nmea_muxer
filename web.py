@@ -81,12 +81,12 @@ def fork_listener():
     try:
         blank = False
         while True:
-            sentence = listen.recv(1024).decode().strip()
-            if dt.now().second % 10 == 0:
+            payload = listen.recv(1024)
+            if dt.now().second % 10 < 12:
+                sentence = payload.decode().strip()
                 blank = True
                 if len(sentence) > 0:
                     print(sentence," >> {} client(s)".format(len(clients)))
-                    payload = sentence.encode()
                     for client in clients:
                         try:
                             client.sendall(payload)
