@@ -5,7 +5,7 @@ sock = None
 def main():
     global sock
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('192.168.212.181',54321)
+    server_address = ('192.168.212.181',12345)
     sock.connect(server_address)
     print('Connected to {} port {}'.format(*server_address))
 
