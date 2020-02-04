@@ -4,7 +4,7 @@ from threading import Thread
 from time import sleep
 
 class Server:
-    def __init__(self,bind_address):
+    def __init__(self,bind_address,name=""):
         self.status = "DOWN"
         self.bind_address = bind_address
         self.thread = None
@@ -18,6 +18,8 @@ class Server:
         try:
             self.socket.bind(self.bind_address)
             self.status = "UP"
+            self.socket.listen()
+            print('Starting up on {} port {}'.format(*self.bind_address))
             if not self.thread:
                 self.thread = Thread(target=self.process)
                 self.thread.start()
@@ -44,16 +46,17 @@ class Server:
             try:
                 client.sendall(sentence)
             except Exception as err:
-                print()
-                print("EXCEPTION for client "+str(client.getpeername())+":",err)
-                print()
-                print()
-                client.close()
-                self.clients.remove(client)
+                if err.errno == 32:
+                    print("  Client disconnected:",err.strerror)
+                    client.close()
+                    if client in self.clients:
+                        self.clients.remove(client)
+                else:
+                    print()
+                    print("EXCEPTION for Server:",err)
+                    print()
 
     def process(self):
-        self.socket.listen()
-        print('Starting up on {} port {}'.format(*self.bind_address))
 
         while self.alive:
             try:
@@ -70,8 +73,14 @@ class Server:
             except OSError as err:
                 if not err.errno == 22:
                     print()
-                    print("EXCEPTION for Server:",err)
+                    print("Closing Server:",err)
                     print()
+                else:
+                    print("WHAT DA",err)
+                    client.close()
+                    if client in self.clients:
+                        self.clients.remove(client)
+
 
             except Exception as err:
                 print()

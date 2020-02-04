@@ -39,7 +39,6 @@ class Listener:
         if not self.reader:
             try:
                 self.reader, writer = await asyncio.open_connection(*self.listen_address)
-                self.status = "UP"
             except ConnectionRefusedError:
                 self.status = "Connection refused"
                 print(self.status)
@@ -52,6 +51,7 @@ class Listener:
             while self.alive:
                 payload = await self.reader.readline()
                 sentence = payload.decode().strip()
+                self.status = "UP"
                 if re.match(r"^[\$!]\w{4,5},",sentence) and self.go_on:
                     verb = sentence.split(",")[0][3:]
 
