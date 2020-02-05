@@ -64,7 +64,12 @@ def clients(iface):
     if server:
         g.s = server
         if len(g.s.clients) > 0:
-            g.socket = socket
+            g.hosts = []
+            for c in server.clients:
+                try:
+                    g.hosts.append(socket.gethostbyaddr(c.getpeername()[0])[0])
+                except:
+                    g.hosts.append("-")
             return render_template("clients.html")
         else:
             return "<h6>No client registered.</h6>"
@@ -79,9 +84,10 @@ def setup():
     if request.method == 'POST':
         for iface in deformalize(request.form):
             hold = False
+            print(iface)
             for server in servers:
-                if iface["id"] == server.iface:
-                    if int(iface["port"]) != server.port:
+                if iface['id'] == server.iface:
+                    if int(iface['port']) != server.port:
                         for l in listeners:
                             if server in l.servers:
                                 l.servers.remove(server)
@@ -89,19 +95,28 @@ def setup():
                         server.kill()
                     else:
                         hold = True
-                    if iface["name"] != server.name:
-                        server.name = iface["name"]
-                    if "active" in iface.keys():
-                        for l in listeners:
-                            if server in l.servers:
-                                l.servers.remove(server)
-                        servers.remove(server)
-                        server.kill()
-            if "active" in iface.keys() and not hold:
-                server = Server((iface["ip"],int(iface["port"])),iface["id"],iface["name"])
-                servers.append(server)
-                server.start()
+
+                    if iface['name'] != server.name:
+                        server.name = iface['name']
+
+                    if 'active' in iface.keys():
+                        server.resume()
+                    else:
+                        server.pause()
+
+            if not hold:
+                try:
+                    server = Server((iface['ip'],int(iface['port'])),iface['id'],iface['name'])
+                    server.start()
+                    server.alive = ('active' in iface.keys() )
+                    servers.append(server)
+                except:
+                    pass
+
+        for l in listeners:
+            l.downdate(servers)
         update()
+
         return redirect("/",code=303)
 
 
@@ -112,12 +127,13 @@ def setup():
             if 2 in iface.keys() and iface[2][0]['addr'].split('.')[2] == ship_id:
                 g.ifaces.append([name,name,iface[2][0]['addr']])
         return render_template("setup.html")
+
     else:
         g.ifaces = []
         ids = []
         for server in servers:
             if server.iface in netifaces.interfaces():
-                g.ifaces.append([server.iface,server.name,server.ip,server.port,1])
+                g.ifaces.append([server.iface,server.name,server.ip,server.port,(1 if server.alive else 0)])
                 ids.append(server.iface)
         for name in netifaces.interfaces():
             if not name in ids:
@@ -128,6 +144,29 @@ def setup():
 
 
 
+
+
+@app.route("/add_listener",methods=["GET","POST"])
+def add_listener():
+    if request.method == 'POST':
+        print(request.form)
+        ss = servers if ('publish' in request.form.keys()) else []
+        listener = Listener( (request.form['ip'], request.form['port']), "", request.form['name'])
+        listener.start()
+        listeners.append(listener)
+        listener.servers = []
+        for k in request.form:
+            if re.match(r"^server_",k):
+                for s in servers:
+                    if s.iface == re.sub(r"^server_","",k):
+                        listener.servers.append(s)
+        listener.update()
+        update()
+        return redirect("/",code=303)
+
+
+    g.servers = servers
+    return render_template("add_listener.html")
 
 
 @app.route("/edit_listener/<id>",methods=["GET","POST"])
@@ -141,8 +180,6 @@ def edit_listener(id):
         listener.name = request.form['name']
         listener.servers = []
         for k in request.form:
-            print()
-            print(k)
             if re.match(r"^server_",k):
                 for s in servers:
                     if s.iface == re.sub(r"^server_","",k):
@@ -159,23 +196,8 @@ def edit_listener(id):
         pass
 
 
-@app.route("/add_listener",methods=["GET","POST"])
-def add_listener():
-    if request.method == 'POST':
-        ss = servers if ('publish' in request.form.keys()) else []
-        listener = Listener( (request.form['ip'], request.form['port']), "", request.form['name'], ss )
-        listener.start()
-        listeners.append(listener)
-        update()
-        return redirect("/",code=303)
-
-
-    return render_template("add_listener.html")
-
-
 @app.route("/kill_listener",methods=["POST"])
 def kill_listener():
-    print(request.form)
     if request.method == 'POST':
         listener = None
         for l in listeners:

@@ -20,7 +20,9 @@
                       <th>Name</th>
                       <th>IP</th>
                       <th>Port</th>
-                      <th>Publish</th>
+                      {% for s in g.servers %}
+                        <th>{{ s.name }}</th>
+                      {% endfor %}
                     </tr>
                   </thead>
                   <tbody>
@@ -40,14 +42,16 @@
                           <input name="port" value="" type="number">
                         </div>
                       </td>
-                      <td>
-                        <div class="switch">
-                          <label>
-                            <input type="checkbox" name="publish">
-                            <span class="lever"></span>
-                          </label>
-                        </div>
-                      </td>
+                      {% for s in g.servers %}
+                        <td>
+                          <div class="switch">
+                            <label>
+                              <input type="checkbox" checked=true name="server_{{s.iface}}">
+                              <span class="lever"></span>
+                            </label>
+                          </div>
+                        </td>
+                      {% endfor %}
                     </tr>
                   </tbody>
                 </table>

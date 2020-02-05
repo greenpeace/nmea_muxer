@@ -46,6 +46,13 @@ class Listener:
     def update(self):
         self.server_ids = list(map(lambda s: s.iface, self.servers))
 
+
+    def downdate(self,servers):
+        self.servers = []
+        for s in servers:
+            if s.iface in self.server_ids:
+                self.servers.append(s)
+
     def async_start(self):
         if not self.loop.is_running():
             self.loop.run_until_complete(self.__async__start())

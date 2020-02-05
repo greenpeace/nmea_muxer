@@ -61,22 +61,36 @@ class Server:
         self.thread.join()
         self.status = "DOWN"
 
+
+    def pause(self):
+        if self.alive:
+            self.status = "PAUSED"
+            self.alive = False
+            self.uptime += (dt.now() - self.started_at).total_seconds()
+
+    def resume(self):
+        if not self.alive:
+            self.status = "UP"
+            self.alive = True
+            self.uptime += (dt.now() - self.started_at).total_seconds()
+
     def emit(self,sentence):
         if self.verbose:
             print(sentence) 
-        for client in self.clients:
-            try:
-                client.sendall(sentence)
-            except Exception as err:
-                if err.errno == 32:
-                    print("    Client disconnected:",err.strerror)
-                    client.close()
-                    if client in self.clients:
-                        self.clients.remove(client)
-                else:
-                    print()
-                    print("    EXCEPTION for Server:",err)
-                    print()
+        if self.alive:
+            for client in self.clients:
+                try:
+                    client.sendall(sentence)
+                except Exception as err:
+                    if err.errno == 32:
+                        print("    Client disconnected:",err.strerror)
+                        client.close()
+                        if client in self.clients:
+                            self.clients.remove(client)
+                    else:
+                        print()
+                        print("    EXCEPTION for Server:",err)
+                        print()
 
     def process(self):
 
