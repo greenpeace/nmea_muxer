@@ -17,7 +17,10 @@ main {
 
 .bold { font-weight: bold; }
 .large-text { font-size: 16px; }
+
+.btn-pad { margin: 8px; }
+.pad { padding: 15px; }
+.pad-10 { padding: 10px; }
 table.pad th, table.pad td { padding: 15px; }
-.pad:not(table) { padding = 15px; }
 
 

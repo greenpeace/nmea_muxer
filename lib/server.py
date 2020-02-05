@@ -6,13 +6,14 @@ from time import sleep
 class Server:
 
 
-    def __init__(self,bind_address,iface="",name=""):
+    def __init__(self,bind_address,iface="",name="",verbose=False):
         self.status = "DOWN"
         self.bind_address = bind_address
         self.name = name
         self.iface = iface
         self.ip = bind_address[0]
         self.port = bind_address[1]
+        self.verbose = verbose
         self.thread = None
         self.alive = True
         self.go_on = True
@@ -28,11 +29,10 @@ class Server:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            print('Starting up on {} port {}'.format(*self.bind_address))
+            print('    Starting server on {} port {}'.format(*self.bind_address))
             if not self.thread:
                 self.thread = Thread(target=self.process)
                 self.thread.start()
-                print("thread started")
         except Exception as err:
             if self.tries >= 0:
                 print(err, ", retrying")
@@ -54,26 +54,26 @@ class Server:
         self.status = "DOWN"
 
     def emit(self,sentence):
-        print(sentence)
+        if self.verbose:
+            print(sentence) 
         for client in self.clients:
             try:
                 client.sendall(sentence)
             except Exception as err:
                 if err.errno == 32:
-                    print("  Client disconnected:",err.strerror)
+                    print("    Client disconnected:",err.strerror)
                     client.close()
                     if client in self.clients:
                         self.clients.remove(client)
                 else:
                     print()
-                    print("EXCEPTION for Server:",err)
+                    print("    EXCEPTION for Server:",err)
                     print()
 
     def process(self):
 
         while self.alive:
-            print()
-            print("alive")
+            client = None
             try:
                 client, client_address = self.socket.accept()
                 print("  incoming: ",client_address)
@@ -81,25 +81,25 @@ class Server:
 
             except KeyboardInterrupt:
                 print()
-                print("KeyboardInterrupt for Server - closing client sockets")
+                print("    KeyboardInterrupt for Server - closing client sockets")
                 self.kill()
                 print()
 
             except OSError as err:
-                if not err.errno == 22:
+                if err.errno != 22:
                     print()
-                    print("Closing Server:",err)
+                    print("    Closing Server:",err)
                     print()
                 else:
-                    print("WHAT DA",err)
-                    client.close()
-                    if client in self.clients:
-                        self.clients.remove(client)
+                    if client:
+                        client.close()
+                        if client in self.clients:
+                            self.clients.remove(client)
 
 
             except Exception as err:
                 print()
-                print("EXCEPTION for Server:",err)
+                print("    EXCEPTION for Server:",err)
                 print()
 
 

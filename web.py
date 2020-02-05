@@ -26,6 +26,7 @@ settings = Settings()
 @app.before_request
 def before_request():
     if servers == []:
+        print("inittin")
         init()
     if request.headers.getlist("X-Forwarded-For"):
         g.ip = request.headers.getlist("X-Forwarded-For")[0]
@@ -39,10 +40,13 @@ def before_request():
 def index():
     if servers == []:
         init()
-        return redirect("setup", code=302)
+        return redirect("setup", code=303)
     else:
         g.servers = servers
         return render_template("index.html")
+
+
+
 
 @app.route("/setup",methods=["GET","POST"])
 def setup():
@@ -50,7 +54,6 @@ def setup():
         for iface in deformalize(request.form):
             hold = False
             if "active" in iface.keys():
-                print(iface)
                 for server in servers:
                     if iface["id"] == server.iface:
                         if iface["port"] != server.port:
@@ -62,9 +65,9 @@ def setup():
                 if not hold:
                     server = Server((iface["ip"],int(iface["port"])),iface["id"],iface["name"])
                     servers.append(server)
-                    print("start up server")
                     server.start()
         settings.save(servers,listeners)
+        return redirect("/",code=303)
 
 
     g.title = "NMEA MUXER - Server Setup"
