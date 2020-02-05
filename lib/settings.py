@@ -13,14 +13,13 @@ class Settings:
     def export(self):
         sts = {"settings":{}}
         sts["settings"]["freq"] = self.freq
-        sts["servers"] = []
-        for server in self.servers:
-            sts["servers"].append(server.as_json)
-        for listener in self.listeners:
-            sts["listeners"].append(listener.as_json)
+        sts["servers"] = self.servers
+        sts["listeners"] = self.listeners
         return sts
 
-    def save(self,filename="current"):
+    def save(self,servers,listeners,filename="current"):
+        self.servers = list(map(lambda server: server.as_json(), servers))
+        self.listeners = list(map(lambda listener: listener.as_json(), listeners))
         with open("./lib/settings/"+filename+".json","w") as f:
             f.write(json.dumps(self.export(), indent=2, sort_keys=True))
 
@@ -31,19 +30,13 @@ class Settings:
             except:
                 return "JSON file parse error"
 
-            try:
-                for unit, attrs in data.items():
-                    obj = {"settings":self,"ship":self.ship,"target":self.target,"rotator":self.rotator}[unit]
-                    if not obj:
-                        obj = eval(unit.title())()
+            for unit in data:
+                if unit == 'settings':
+                    for key, value in data[unit].items():
+                        self.__dict__[key] = value
+                else:
+                    self.__dict__[unit] = data[unit]
 
-                    for key, value in attrs.items():
-                        obj.__dict__[key] = value
-
-                    self.__dict__[unit] = obj
-
-            except:
-                return "Settings file corrupt"
 
 
 

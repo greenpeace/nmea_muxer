@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block content %}
+
+      <div class="row">
+        <div class="col s12  m8 offset-m2">
+          <form method="post" action="/setup" id="server_form">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title left">Server Setup</span>
+                <button type="submit" class="pad right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons large">check</i></button>
+                <a href="/" class="pad right btn-floating btn-large waves-effect waves-light red darken-2"><i class="material-icons">close</i></a>
+                <table class="table highlight pad">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>IP</th>
+                      <th>Port</th>
+                      <th>Active</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for iface in g.ifaces %}
+                      <tr>
+                        <td>
+                          <div class="input-field">
+                            <input name="id_{{loop.index}}" value="{{iface[0]}}" type="hidden"/>
+                            <input name="name_{{loop.index}}" value="{{iface[1]}}" type="text"/>
+                          </div>
+                        </td>
+                        <td>
+                          <div style="margin-top:-12px;">
+                            <input name="ip_{{loop.index}}" value="{{iface[2]}}" type="hidden"/>
+                            <p class="large-text grey-text text-darken-2">{{iface[2]}}</p>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="input-field" style="width:72px;">
+                            <input name="port_{{loop.index}}" value="{{iface[3]}}" type="number">
+                          </div>
+                        </td>
+                        <td>
+                          <div class="switch">
+                            <label>
+                              {% if iface[4] == 1 %}
+                                <input type="checkbox" checked=true name="active_{{loop.index}}">
+                              {% else %}
+                                <input type="checkbox" name="active_{{loop.index}}">
+                              {% endif %}
+                              <span class="lever"></span>
+                            </label>
+                          </div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+
+{% endblock %}

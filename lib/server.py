@@ -4,17 +4,26 @@ from threading import Thread
 from time import sleep
 
 class Server:
-    def __init__(self,bind_address,name=""):
+
+
+    def __init__(self,bind_address,iface="",name=""):
         self.status = "DOWN"
         self.bind_address = bind_address
+        self.name = name
+        self.iface = iface
+        self.ip = bind_address[0]
+        self.port = bind_address[1]
         self.thread = None
         self.alive = True
         self.go_on = True
         self.clients=[]
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.for_export = ["bind_address","name","iface"]
+        self.tries = 3
 
     def start(self):
+        self.tries -= 1
         try:
             self.socket.bind(self.bind_address)
             self.status = "UP"
@@ -23,11 +32,15 @@ class Server:
             if not self.thread:
                 self.thread = Thread(target=self.process)
                 self.thread.start()
-
+                print("thread started")
         except Exception as err:
-            print("  "+str(err)+" - retrying.")
-            sleep(1)
-            self.start()
+            if self.tries >= 0:
+                print(err, ", retrying")
+                sleep(1)
+                self.start()
+            else:
+                print("Tried many times, didn't work")
+                pass
 
     def kill(self):
         self.status = "CLOSING"
@@ -59,6 +72,8 @@ class Server:
     def process(self):
 
         while self.alive:
+            print()
+            print("alive")
             try:
                 client, client_address = self.socket.accept()
                 print("  incoming: ",client_address)
@@ -86,6 +101,14 @@ class Server:
                 print()
                 print("EXCEPTION for Server:",err)
                 print()
+
+
+    def as_json(self):
+        json = {}
+        for attr in dir(self):
+            if not callable(getattr(self, attr)) and attr in self.for_export:
+                json[attr] = self.__dict__[attr]
+        return json
 
 
 
