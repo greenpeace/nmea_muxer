@@ -26,6 +26,7 @@ class Listener:
 
     def start(self):
         self.go_on = True
+        self.alive = True
         self.started_at = dt.now()
         if not self.thread:
             self.thread = Thread(target=self.async_start)
@@ -63,31 +64,44 @@ class Listener:
                 self.reader, writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
                 self.status = "Connection refused"
-                print(self.status)
+                print(self.name, self.status)
+                self.go_on = False
+                self.alive = False
             except OSError:
                 self.status = "Socket busy"
-                print(self.status)
+                print(self.name, self.status)
+                self.go_on = False
+                self.alive = False
 
         while self.alive:
-            payload = await self.reader.readline()
-            sentence = payload.decode().strip()
-            self.status = "UP"
-            if re.match(r"^[\$!]\w{4,5},",sentence) and self.go_on:
-                verb = sentence.split(",")[0][1:]
+            try:
+                payload = await self.reader.readline()
+                sentence = payload.decode().strip()
+                self.status = "UP"
+                if re.match(r"^[\$!]\w{4,5},",sentence) and self.go_on:
+                    verb = sentence.split(",")[0][1:]
 
-                if not verb in self.msg_setup:
-                    self.msg_setup[verb] = {}
+                    if not verb in self.msg_setup:
+                        self.msg_setup[verb] = {}
 
-                if 'deny' in self.msg_setup[verb].keys():
-                    pass
-                else:
-                    if verb in self.msg_count:
-                        self.msg_count[verb] += 1
+                    if 'deny' in self.msg_setup[verb].keys():
+                        pass
                     else:
-                        self.msg_count[verb] = 1
+                        if verb in self.msg_count:
+                            self.msg_count[verb] += 1
+                        else:
+                            self.msg_count[verb] = 1
 
-                    for server in self.servers:
-                        server.emit(payload)
+                        for server in self.servers:
+                            server.emit(payload)
+
+            except Exception as err:
+                print(str(err))
+                if not str(err) == "Separator is not found, and chunk exceed the limit":
+                    print(self.name, err)
+                    self.go_on = False
+                    self.alive = False
+                    break
 
     def get_uptime(self):
         if self.go_on:

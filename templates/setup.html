@@ -66,3 +66,9 @@
       </div>
 
 {% endblock %}
+
+{% block body_end %}
+  {{ g.error | safe }}
+{% endblock %}
+
+

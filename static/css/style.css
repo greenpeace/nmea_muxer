@@ -5,6 +5,22 @@
  *
  * Made By MaterializeCSS.com
  */
+
+* {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+textarea, input[type=text], .selectable,  .selectable * {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  cursor:text;
+}
+
 body {
 	display: flex;
 	min-height: 100vh;

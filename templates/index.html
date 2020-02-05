@@ -47,9 +47,9 @@
                       {% endif %}
                       </td>
                       <td style="text-align:left;font-weight:bold;">{{server.name}}</td>
-                      <td style="text-align:right"><code>{{server.ip}}&nbsp; </code></td>
-                      <td style="text-align:left"><code><b>{{server.port}}</b></code></td>
-                      <td>{{server.iface}}</td>
+                      <td style="text-align:right"><code class="selectable">{{server.ip}}&nbsp; </code></td>
+                      <td style="text-align:left"><code class="selectable"><b>{{server.port}}</b></code></td>
+                      <td class="selectable">{{server.iface}}</td>
                       <td class="blue-grey-text text-darken-1">
                         <b> {{ server.clients | length() }}</b>
                         <a onclick="clients('{{server.iface}}','{{ server.name }}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
@@ -75,18 +75,24 @@
         {% for l in g.listeners %}
           <div class="col s12 m6 l4 xl3">
             {% set cardcolor = "white" if l.go_on else "blue-grey lighten-4"%}
+            {% set playcolor = "teal-text" if l.alive else "red-text text-darken-4"%}
             <div class="card {{ cardcolor }}" id="{{l.id}}">
               <div class="card-content" style="padding-top:12px">
                 <div class="clearfix">
+                  {% if not l.alive %}
+                    <span class="red-text text-darken-4 left">{{ l.status }}</span>
+                  {% else %}
+                    <span class="teal-text left">{{ l.status }}</span>
+                  {% endif %}
                   {% if l.go_on %}
                     <a onclick="pause('{{l.id}}')" class="right blue-grey-text text-darken-2" style="margin-right:-12px"><i class="material-icons" style="font-size:36px;">pause_circle_filled</i></a>
                   {% else %}
-                    <a onclick="resume('{{l.id}}')" class="right teal-text" style="margin-right:-12px"><i class="material-icons" style="font-size:36px;">play_circle_filled</i></a>
+                    <a onclick="resume('{{l.id}}')" class="right {{ playcolor }}" style="margin-right:-12px"><i class="material-icons" style="font-size:36px;">play_circle_filled</i></a>
                   {% endif %}
                   <a href="/edit_listener/{{ l.id }}" class="right teal-text"><i class="material-icons small" style="font-size:24px;margin:6px;">build</i></a>
                 </div>
-                <span class="card-title left">{{ l.name }}</span>
-                <span>{{ l.listen_address[0] }}:<b>{{ l.listen_address[1] }}</b></span>
+                <span class="card-title">{{ l.name }}</span>
+                <code class="selectable" style="font-size:14px;">{{ l.listen_address[0] }}:<b>{{ l.listen_address[1] }}</b></code>
                 <br/>
                 {% for s in l.servers %}
                   <span class="bold">> {{ s.name }}</span>
