@@ -39,7 +39,7 @@
                       </td>
                       <td>
                         <div class="input-field" style="max-width:72px;">
-                          <input name="port" value="" type="number">
+                          <input name="port" value="" min="0" max="65535" type="number">
                         </div>
                       </td>
                       {% for s in g.servers %}
