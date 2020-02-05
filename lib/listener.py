@@ -4,14 +4,16 @@ from .utils import *
 import re, asyncio, random, string
 
 class Listener:
-    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={}):
-        self.status = "DOWN"
+    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0):
         self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
         self.name = name
         self.servers = servers
         self.server_ids = list(map(lambda s: s.iface, servers))
         self.msg_setup = msg_setup
+        self.throttle = throttle
+
+        self.status = "DOWN"
         self.msg_count = {}
         self.loop = asyncio.new_event_loop()
         self.thread = None
@@ -40,6 +42,9 @@ class Listener:
         self.go_on = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
         self.thread.join()
+
+    def update(self):
+        self.server_ids = list(map(lambda s: s.iface, self.servers))
 
     def async_start(self):
         if not self.loop.is_running():

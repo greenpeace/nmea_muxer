@@ -1,7 +1,9 @@
 import re
 import socket
 from threading import Thread
-from time import sleep
+from time      import sleep
+from datetime  import datetime as dt
+from .utils import *
 
 class Server:
 
@@ -20,11 +22,14 @@ class Server:
         self.clients=[]
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.uptime = 0
+        self.started_at = dt.now()
         self.for_export = ["bind_address","name","iface"]
         self.tries = 3
 
     def start(self):
         self.tries -= 1
+        self.started_at = dt.now()
         try:
             self.socket.bind(self.bind_address)
             self.status = "UP"
@@ -47,6 +52,7 @@ class Server:
     def kill(self):
         self.status = "CLOSING"
         self.alive = False
+        self.uptime += (dt.now() - self.started_at).total_seconds()
         for client in self.clients:
             client.close()
             self.clients.remove(client)
@@ -104,6 +110,14 @@ class Server:
                 print("    EXCEPTION for Server:",err)
                 print()
 
+
+
+    def get_uptime(self):
+        if self.alive:
+            up = self.uptime + (dt.now()-self.started_at).total_seconds()
+        else:
+            up = self.uptime
+        return time_ago(up)
 
     def as_json(self):
         json = {}

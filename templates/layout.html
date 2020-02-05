@@ -6,9 +6,9 @@
     <title>{{ g.title }}</title>
 
     <!-- CSS  -->
-    <link href="static/css/material-icons.css" rel="stylesheet">
-    <link href="static/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-    <link href="static/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="/static/css/material-icons.css" rel="stylesheet">
+    <link href="/static/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="/static/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
   </head>
 
   <body class="blue-grey lighten-4">
@@ -24,9 +24,10 @@
           </a>
           <ul class="right hide-on-med-and-down">
             <li class="pad" style="padding-top:0;"> 
-              <span class="badge blue-grey white-text">L{{ g.listenerCount }}</span>
-              <span class="badge blue-grey white-text">S{{ g.serverCount }}</span>
-              <span class="badge blue-grey white-text">T{{ g.threadCount }}</span>
+              <span class="badge navitem blue-grey white-text">C{{ g.clientCount }}</span>
+              <span class="badge navitem blue-grey white-text">L{{ g.listenerCount }}</span>
+              <span class="badge navitem blue-grey white-text">S{{ g.serverCount }}</span>
+              <span class="badge navitem blue-grey white-text">T{{ g.threadCount }}</span>
             </li>
           </ul>
 
@@ -62,15 +63,15 @@
     </footer>
 
     <!--  Scripts-->
-    <script src="static/js/jquery-3.4.1.min.js"></script>
-    <script src="static/js/materialize.min.js"></script>
-    <script src="static/js/init.js"></script>
+    <script src="/static/js/jquery-3.4.1.min.js"></script>
+    <script src="/static/js/jquery-ui.js"></script>
+    <script src="/static/js/materialize.min.js"></script>
+    <script src="/static/js/init.js"></script>
     {% block body_end %}
     {% endblock %}
 
       <script>
         $(document).ready(function(){ 
-          console.log("red")
           window.setTimeout(logoGreen,100);
         });
         function logoGreen (){ 

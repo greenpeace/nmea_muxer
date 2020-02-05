@@ -36,3 +36,23 @@ content: " ";
 clear: both;
 }
 
+span.badge.navitem {
+  min-width: 24px;
+  padding: 0 6px;
+  margin-left: 6px;
+}
+
+span.badge.inline {
+  margin:2px  0;
+  float:none;
+  padding: 2px 4px 24px;
+  border-radius:2px;
+  display: inline-block;
+  text-align: left;
+  font-size: 16px;
+  width: 84px;
+}
+.brand-logo i {
+  transition:0.1s;
+}
+

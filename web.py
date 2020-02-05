@@ -7,7 +7,7 @@ from datetime       import datetime as dt
 
 import threading
 import netifaces
-import json, re, os
+import socket, json, re, os
 
 from lib.server     import Server
 from lib.listener   import Listener
@@ -38,6 +38,9 @@ def before_request():
     g.threadCount = threading.activeCount()
     g.serverCount = len(servers)
     g.listenerCount = len(listeners)
+    g.clientCount = 0
+    for s in servers:
+        g.clientCount += len(s.clients)
 
 
 @app.route("/")
@@ -50,6 +53,23 @@ def index():
         g.listeners = listeners
         print(listeners[0].as_json())
         return render_template("index.html")
+
+@app.route("/clients/<iface>")
+def clients(iface):
+    server = None
+    for s in servers:
+        if s.iface == iface:
+            server = s
+
+    if server:
+        g.s = server
+        if len(g.s.clients) > 0:
+            g.socket = socket
+            return render_template("clients.html")
+        else:
+            return "<h6>No client registered.</h6>"
+    else:
+        return ""
 
 
 
@@ -110,6 +130,35 @@ def setup():
 
 
 
+@app.route("/edit_listener/<id>",methods=["GET","POST"])
+def edit_listener(id):
+    listener = None
+    for l in listeners:
+        if l.id == id:
+            listener = l
+
+    if request.method == 'POST' and listener:
+        listener.name = request.form['name']
+        listener.servers = []
+        for k in request.form:
+            print()
+            print(k)
+            if re.match(r"^server_",k):
+                for s in servers:
+                    if s.iface == re.sub(r"^server_","",k):
+                        listener.servers.append(s)
+        listener.update()
+        update()
+        return redirect("/",code=303)
+
+    if listener:
+        g.l = listener
+        g.servers = servers
+        return render_template("edit_listener.html")
+    else:
+        pass
+
+
 @app.route("/add_listener",methods=["GET","POST"])
 def add_listener():
     if request.method == 'POST':
@@ -126,6 +175,7 @@ def add_listener():
 
 @app.route("/kill_listener",methods=["POST"])
 def kill_listener():
+    print(request.form)
     if request.method == 'POST':
         listener = None
         for l in listeners:
@@ -137,7 +187,8 @@ def kill_listener():
             update()
             return "ack"
         else:
-            return "nack"
+            return ""
+    return ""
 
 @app.route("/pause_listener",methods=["POST"])
 def pause_listener():

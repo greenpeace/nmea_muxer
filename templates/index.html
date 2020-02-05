@@ -1,5 +1,20 @@
 {% extends "layout.html" %}
 {% block content %}
+      <div id="clients" class="modal">
+        <div class="modal-content">
+          <div class="clearfix">
+            <h5 class="card-title left nopad">Clients on <b></b>:</h5>
+            <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+          </div>
+          <br/>
+          <div class="progress">
+            <div class="indeterminate"></div>
+          </div>
+          <div class="data"> </div>
+          <br/>
+          <br/>
+        </div>
+      </div>
       <br/>
       <div class="row">
         <div class="col s12">
@@ -9,19 +24,42 @@
           </div>
           <div class="card">
             <div class="card-content">
-              <table class="nopad">
-              {% for server in g.servers %}
-                <tr>
-                  <td style="text-align:right;font-weight:bold; max-width:90px">{{server.name}}:</td>
-                  {% if server.alive %}
-                    <td style="padding:0 15px; display: inline-flex; vertical-align: sub;"><i class="material-icons teal-text" style="font-size: 18px">swap_vertical_circle</i></td>
-                  {% else %}
-                    <td style="padding:0 15px; display: inline-flex; vertical-align: sub;"><i class="material-icons red-text text-darken-4" style="font-size: 18px">remove_circle</i></td>
-                  {% endif %}
-                  <td style="width:240px"><code>{{server.ip}} : <b>{{server.port}}</b></code></td>
-                  <td>clients:<b> {{ server.clients | length() }}</b></td>
-                </tr>
-              {% endfor %}
+              <table class="nopad responsive-table">
+                <thead>
+                  <tr>
+                    <th class="blue-grey-text">&nbsp;</th>
+                    <th class="blue-grey-text">Name</th>
+                    <th class="blue-grey-text" style="text-align:right">IP &nbsp; </th>
+                    <th class="blue-grey-text">Port</th>
+                    <th class="blue-grey-text">Interface</th>
+                    <th class="blue-grey-text">Clients</th>
+                    <th class="blue-grey-text">Uptime</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for server in g.servers %}
+                    <tr>
+                      <td>
+                      {% if server.alive %}
+                        <span style="padding:0 15px; display: inline-flex; vertical-align: sub;"><i class="material-icons teal-text" style="font-size: 18px">lens</i></span>
+                      {% else %}
+                        <span style="padding:0 15px; display: inline-flex; vertical-align: sub;"><i class="material-icons red-text text-darken-4" style="font-size: 18px">remove_circle</i></span>
+                      {% endif %}
+                      </td>
+                      <td style="text-align:left;font-weight:bold;">{{server.name}}</td>
+                      <td style="text-align:right"><code>{{server.ip}}&nbsp; </code></td>
+                      <td style="text-align:left"><code><b>{{server.port}}</b></code></td>
+                      <td>{{server.iface}}</td>
+                      <td class="blue-grey-text text-darken-1">
+                        <b> {{ server.clients | length() }}</b>
+                        <a onclick="clients('{{server.iface}}','{{ server.name }}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
+                      </td>
+                      <td class="blue-grey-text text-darken-1">
+                        {{ server.get_uptime() }}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                <tbody>
               </table>
             </div>
           </div>
@@ -31,43 +69,46 @@
         <div class="col s12">
           <div class="clearfix">
             <h4 class="left" style="margin:6px 0">Listeners</h4>
-            <a class="pad right teal-text" href="/add_listener"><i class="material-icons small">add_circle</i></a>
+            <a class="pad right teal-text" href="/add_listener"><i class="material-icons" style="font-size:36px;margin:-8px;">add_circle</i></a>
           </div>
         </div>
         {% for l in g.listeners %}
-          <div class="col s12 m4">
+          <div class="col s12 m6 l4 xl3">
             {% set cardcolor = "white" if l.go_on else "blue-grey lighten-4"%}
-            <div class="card {{ cardcolor }}">
-              <div class="card-content">
+            <div class="card {{ cardcolor }}" id="{{l.id}}">
+              <div class="card-content" style="padding-top:12px">
                 <div class="clearfix">
-                  <span class="card-title left">{{ l.name }}</span>
-                  <a onclick="kill('{{l.id}}')" class="right red-text text-darken-4"><i class="material-icons small">cancel</i></a>
                   {% if l.go_on %}
-                    <a onclick="pause('{{l.id}}')" class="right blue-grey-text text-darken-2"><i class="material-icons small">pause_circle_filled</i></a>
+                    <a onclick="pause('{{l.id}}')" class="right blue-grey-text text-darken-2" style="margin-right:-12px"><i class="material-icons" style="font-size:36px;">pause_circle_filled</i></a>
                   {% else %}
-                    <a onclick="resume('{{l.id}}')" class="right teal-text text-darken-2"><i class="material-icons small">play_circle_filled</i></a>
+                    <a onclick="resume('{{l.id}}')" class="right teal-text" style="margin-right:-12px"><i class="material-icons" style="font-size:36px;">play_circle_filled</i></a>
                   {% endif %}
+                  <a href="/edit_listener/{{ l.id }}" class="right teal-text"><i class="material-icons small" style="font-size:24px;margin:6px;">build</i></a>
                 </div>
+                <span class="card-title left">{{ l.name }}</span>
                 <span>{{ l.listen_address[0] }}:<b>{{ l.listen_address[1] }}</b></span>
                 <br/>
                 {% for s in l.servers %}
-                  <span class="blue-grey-text">{{ s.name }}</span>
+                  <span class="bold">> {{ s.name }}</span>
+                  <br/>
                 {% endfor %}
-                <br/>
-                <br/>
-                <table class="nopad">
-                  <tbody>
-                    {% for verb in l.msg_setup %}
-                      <tr>
-                        {% set color = "blue-grey lighten-2 off" if l.msg_setup[verb]['deny'] else "teal on"%}
-                        <td> <a onclick="toggle('{{l.id}}','{{verb}}')" class="sentence"><span class="badge white-text bold {{color}}" style="width:72px;"><code>{{verb}}</code></span></a> </td>
-                        <td> <span>{{l.msg_count[verb]}}</span> </td>
-                      </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-                <br/>
-                <span class="grey-text"><b>Uptime: </b>{{ l.get_uptime() }}</span>
+                <ul class="plain sortable">
+                  {% for verb in l.msg_setup %}
+                    <li class="ui-state-default">
+                      {% set color = "blue-grey lighten-2 off" if l.msg_setup[verb]['deny'] else "teal on"%}
+                      <a onclick="toggle('{{l.id}}','{{verb}}')" class="sentence">
+                        <span class="badge inline white-text bold {{color}}">
+                          <i class="material-icons" style="font-size:16px;">menu</i>
+                          <code>{{verb}}</code>
+                        </span>
+                      </a>
+                      <span class="blue-grey-text text-darken-1"  style="font-size:16px; margin-left:8px;">{{l.msg_count[verb]}}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+                <!--<span class="blue-grey-text text-darken-1"><b>Throttle: </b>{{ l.throttle }}s</span>
+                <br/>-->
+                <span class="blue-grey-text text-darken-1"><b>Uptime: </b>{{ l.get_uptime() }}</span>
               </div>
             </div>
           </div>
@@ -83,16 +124,29 @@
   
   <script>
     $(document).ready(function(){ 
-      $("body").dblclick(function(){
+      $('#clients').modal();
+      $( "ul.sortable" ).sortable({
+        update: function( event, ui ) {
+          console.log($(ui.item).closest(".card").attr("id"));
+        }
+      });
+      $("body").dblclick(function(e){
+        e.preventDefault();
         window.location.reload();
       })
     });
-    function kill(id) {
-      $.post("/kill_listener",{id:id},function(data){
-        if (data == "ack") {
-          window.location.reload();
+
+    function clients(id,name) {
+      $('#clients .progress').show();
+      $('#clients .data').html("");
+      $('#clients h5 > b').text(name);
+      $('#clients').modal('open');
+      $.get("/clients/"+id,function(data){
+        if (data.length>0) {
+          $('#clients .progress').hide();
+          $('#clients .data').html(data);
         }
-      })
+      });
     }
     function pause(id) {
       $.post("/pause_listener",{id:id},function(data){

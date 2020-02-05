@@ -1,0 +1,19 @@
+<table class="nopad responsive-table">
+  <thead>
+    <tr>
+      <th class="blue-grey-text">Host</th>
+      <th class="blue-grey-text" style="text-align:right">IP &nbsp; </th>
+      <th class="blue-grey-text">Port</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for client in g.s.clients %}
+      {% set addr = client.getpeername() %}
+      <tr>
+        <td style="text-align:left"> {{ g.socket.gethostbyaddr(addr[0])[0] }} </td>
+        <td style="text-align:right"> {{ addr[0] }} &nbsp; </td>
+        <td style="text-align:left"> {{ addr[1] }} </td>
+      </tr>
+    {% endfor %}
+  <tbody>
+</table>
