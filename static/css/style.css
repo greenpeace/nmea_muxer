@@ -22,5 +22,6 @@ main {
 .pad { padding: 15px; }
 .pad-10 { padding: 10px; }
 table.pad th, table.pad td { padding: 15px; }
+table.nopad th, table.nopad td { padding: 0; }
 
 

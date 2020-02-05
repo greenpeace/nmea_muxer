@@ -1,5 +1,6 @@
 from flask          import Flask, render_template, session, request, \
                            g, redirect
+from flask_socketio import SocketIO, emit, disconnect
 
 from time           import sleep
 from datetime       import datetime as dt
@@ -17,6 +18,7 @@ app = Flask(__name__)
 #app._static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 app.config['SECRET_KEY'] = 'M-LkyLF&sid=379941accd8541ef9f9c7e8efb323c82'
 
+socketio = SocketIO(app, async_mode="gevent")
 servers = []
 listeners = []
 ship_id = "212"

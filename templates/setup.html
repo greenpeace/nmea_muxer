@@ -3,14 +3,17 @@
 
       <div class="row">
         <br/>
-        <div class="col s12  m8 offset-m2">
+        <div class="col s12 l8 offset-l2">
           <form method="post" action="/setup" id="server_form">
             <div class="card">
               <div class="card-content">
                 <span class="card-title left pad">Server Setup</span>
                 <div class="right pad-10"></div>
                 <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
-                <a href="/" class="btn-pad right btn-floating waves-effect waves-light red darken-2"><i class="material-icons">close</i></a>
+                <div class="right pad-10"></div>
+                <a href="/" class="btn-pad right btn-floating waves-effect waves-light red darken-2"><i class="material-icons" style="font-size: 28px">close</i></a>
+              </div>
+              <div class="card-content">
                 <table class="table highlight pad">
                   <thead>
                     <tr>
@@ -24,7 +27,7 @@
                     {% for iface in g.ifaces %}
                       <tr>
                         <td>
-                          <div class="input-field">
+                          <div class="input-field" style="width:144px;">
                             <input name="id_{{loop.index}}" value="{{iface[0]}}" type="hidden"/>
                             <input name="name_{{loop.index}}" value="{{iface[1]}}" type="text"/>
                           </div>

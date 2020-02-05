@@ -2,12 +2,28 @@
 {% block content %}
       <div class="row">
           <br/>
-        <div class="col s12  m4">
+        <div class="col s12 m6">
         </div>
-        <div class="col s12  m6">
-          {% for server in g.servers %}
-            <p><b>{{server.name}}:</b> {{server.ip}}:{{server.port}}</p>
-          {% endfor %}
+        <div class="col s12 m6">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title left ">Servers</span>
+              <a class="right  grey-text" href="/setup"><i class="material-icons">build</i></a>
+              <table class="nopad">
+              {% for server in g.servers %}
+                <tr>
+                  <td style="text-align:right;font-weight:bold;">{{server.name}}:</td>
+                  {% if server.alive %}
+                    <td style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons teal-text" style="font-size: 18px">swap_vertical_circle</i></td>
+                  {% else %}
+                    <td style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons red-text" style="font-size: 18px">swap_vertical_circle</i></td>
+                  {% endif %}
+                  <td><code>{{server.ip}}:<b>{{server.port}}</b></code></td>
+                </tr>
+              {% endfor %}
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 {% endblock %}
