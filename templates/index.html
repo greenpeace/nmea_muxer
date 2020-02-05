@@ -1,7 +1,13 @@
 {% extends "layout.html" %}
 {% block content %}
-  <h1>Index</h1>
-  {% for server in g.servers %}
-    <p><b>{{server.name}}:</b> {{server.iface}} {{server.ip}}:{{server.port}}</p>
-  {% endfor %}
+      <div class="row">
+          <br/>
+        <div class="col s12  m4">
+        </div>
+        <div class="col s12  m6">
+          {% for server in g.servers %}
+            <p><b>{{server.name}}:</b> {{server.ip}}:{{server.port}}</p>
+          {% endfor %}
+        </div>
+      </div>
 {% endblock %}
