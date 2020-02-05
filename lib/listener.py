@@ -1,5 +1,7 @@
-import re, asyncio, random, string
 from threading import Thread
+from datetime  import datetime as dt
+from .utils import *
+import re, asyncio, random, string
 
 class Listener:
     def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={}):
@@ -16,10 +18,13 @@ class Listener:
         self.reader = None
         self.alive = True
         self.go_on = True
+        self.uptime = 0
+        self.started_at = dt.now()
         self.for_export = ["id","listen_address","name","msg_setup","server_ids","go_on"]
 
     def start(self):
         self.go_on = True
+        self.started_at = dt.now()
         if not self.thread:
             self.thread = Thread(target=self.async_start)
             self.thread.start()
@@ -27,10 +32,13 @@ class Listener:
     def pause(self):
         self.status = "DOWN"
         self.go_on = False
+        self.uptime += (dt.now() - self.started_at).total_seconds()
 
     def kill(self):
         self.status = "DOWN"
         self.alive = False
+        self.go_on = False
+        self.uptime += (dt.now() - self.started_at).total_seconds()
         self.thread.join()
 
     def async_start(self):
@@ -68,6 +76,13 @@ class Listener:
 
                     for server in self.servers:
                         server.emit(payload)
+
+    def get_uptime(self):
+        if self.go_on:
+            up = self.uptime + (dt.now()-self.started_at).total_seconds()
+        else:
+            up = self.uptime
+        return time_ago(up)
 
     def as_json(self):
         json = {}

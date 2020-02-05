@@ -15,9 +15,11 @@
     <header>
       <nav class="black" role="navigation">
         <div class="nav-wrapper container">
-          <a id="logo-container" href="/" class="bold brand-logo" style="display: inline-flex; vertical-align: sub;">
+          <a id="logo-container" href="/" class="bold brand-logo">
             &nbsp; 
-            <i class="material-icons white-text" style="font-size: 24px; width:12px; margin:0 9px 0 4px;">swap_vertical</i>
+            <div style="display: inline-flex; vertical-align: middle;">
+              <i class="material-icons" style="color:#B71C1C;font-size: 32px; width:12px; margin:0 7px 0 -8px;">swap_vertical</i>
+            </div>
             <small>NMEA<span class="blue-grey-text text-lighten-3">MUXER</span></small>
           </a>
           <ul class="right hide-on-med-and-down">
@@ -65,5 +67,19 @@
     <script src="static/js/init.js"></script>
     {% block body_end %}
     {% endblock %}
+
+      <script>
+        $(document).ready(function(){ 
+          console.log("red")
+          window.setTimeout(logoGreen,100);
+        });
+        function logoGreen (){ 
+          $(".brand-logo i").css("color","#009688");
+          window.setTimeout(logoWhite,100);
+        }
+        function logoWhite (){ 
+          $(".brand-logo i").css("color","#FFFFFF");
+        }
+      </script>
   </body>
 </html>

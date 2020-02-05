@@ -59,13 +59,15 @@
                   <tbody>
                     {% for verb in l.msg_setup %}
                       <tr>
-                        {% set color = "red darken-4 off" if l.msg_setup[verb]['deny'] else "teal on"%}
+                        {% set color = "blue-grey lighten-2 off" if l.msg_setup[verb]['deny'] else "teal on"%}
                         <td> <a onclick="toggle('{{l.id}}','{{verb}}')" class="sentence"><span class="badge white-text bold {{color}}" style="width:72px;"><code>{{verb}}</code></span></a> </td>
                         <td> <span>{{l.msg_count[verb]}}</span> </td>
                       </tr>
                     {% endfor %}
                   </tbody>
                 </table>
+                <br/>
+                <span class="grey-text"><b>Uptime: </b>{{ l.get_uptime() }}</span>
               </div>
             </div>
           </div>
@@ -81,6 +83,9 @@
   
   <script>
     $(document).ready(function(){ 
+      $("body").dblclick(function(){
+        window.location.reload();
+      })
     });
     function kill(id) {
       $.post("/kill_listener",{id:id},function(data){
