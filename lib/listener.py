@@ -1,20 +1,22 @@
-import re
-import asyncio
+import re, asyncio, random, string
 from threading import Thread
 
 class Listener:
-    def __init__(self,listen_address,servers=[],allow=[],deny=[]):
+    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={}):
         self.status = "DOWN"
+        self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
+        self.name = name
         self.servers = servers
-        self.allow = allow
-        self.deny = deny
+        self.server_ids = list(map(lambda s: s.iface, servers))
+        self.msg_setup = msg_setup
         self.msg_count = {}
         self.loop = asyncio.new_event_loop()
         self.thread = None
         self.reader = None
         self.alive = True
         self.go_on = True
+        self.for_export = ["id","listen_address","name","msg_setup","server_ids","go_on"]
 
     def start(self):
         self.go_on = True
@@ -46,39 +48,31 @@ class Listener:
                 self.status = "Socket busy"
                 print(self.status)
 
-        
-        try:
-            while self.alive:
-                payload = await self.reader.readline()
-                sentence = payload.decode().strip()
-                self.status = "UP"
-                if re.match(r"^[\$!]\w{4,5},",sentence) and self.go_on:
-                    verb = sentence.split(",")[0][3:]
+        while self.alive:
+            payload = await self.reader.readline()
+            sentence = payload.decode().strip()
+            self.status = "UP"
+            if re.match(r"^[\$!]\w{4,5},",sentence) and self.go_on:
+                verb = sentence.split(",")[0][1:]
 
+                if not verb in self.msg_setup:
+                    self.msg_setup[verb] = {}
+
+                if 'deny' in self.msg_setup[verb].keys():
+                    pass
+                else:
                     if verb in self.msg_count:
                         self.msg_count[verb] += 1
                     else:
                         self.msg_count[verb] = 1
 
-                    if self.allow == []:
-                        if not verb in self.deny:
-                            for server in self.servers:
-                                server.emit(payload)
-                    elif verb in self.allow:
-                        for server in self.servers:
-                            server.emit(payload)
+                    for server in self.servers:
+                        server.emit(payload)
 
-        except KeyboardInterrupt:
-            print()
-            print("KeyboardInterrupt for Listener - closing sockets")
-            self.kill()
-            print()
-            pass
-
-        except Exception as err:
-            print()
-            print("EXCEPTION for Listener:")
-            print(err)
-            print()
-
+    def as_json(self):
+        json = {}
+        for attr in dir(self):
+            if not callable(getattr(self, attr)) and attr in self.for_export:
+                json[attr] = self.__dict__[attr]
+        return json
 

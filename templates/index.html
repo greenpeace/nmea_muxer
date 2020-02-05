@@ -1,24 +1,25 @@
 {% extends "layout.html" %}
 {% block content %}
+      <br/>
       <div class="row">
-          <br/>
-        <div class="col s12 m6">
-        </div>
-        <div class="col s12 m6">
+        <div class="col s12">
+          <div class="clearfix">
+            <h4 class="left" style="margin:6px 0">Talkers</h4>
+            <a class="pad right teal-text" href="/setup"><i class="material-icons">build</i></a>
+          </div>
           <div class="card">
             <div class="card-content">
-              <span class="card-title left ">Servers</span>
-              <a class="right  grey-text" href="/setup"><i class="material-icons">build</i></a>
               <table class="nopad">
               {% for server in g.servers %}
                 <tr>
-                  <td style="text-align:right;font-weight:bold;">{{server.name}}:</td>
+                  <td style="text-align:right;font-weight:bold; max-width:90px">{{server.name}}:</td>
                   {% if server.alive %}
-                    <td style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons teal-text" style="font-size: 18px">swap_vertical_circle</i></td>
+                    <td style="padding:0 15px; display: inline-flex; vertical-align: sub;"><i class="material-icons teal-text" style="font-size: 18px">swap_vertical_circle</i></td>
                   {% else %}
-                    <td style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons red-text" style="font-size: 18px">swap_vertical_circle</i></td>
+                    <td style="padding:0 15px; display: inline-flex; vertical-align: sub;"><i class="material-icons red-text text-darken-4" style="font-size: 18px">remove_circle</i></td>
                   {% endif %}
-                  <td><code>{{server.ip}}:<b>{{server.port}}</b></code></td>
+                  <td style="width:240px"><code>{{server.ip}} : <b>{{server.port}}</b></code></td>
+                  <td>clients:<b> {{ server.clients | length() }}</b></td>
                 </tr>
               {% endfor %}
               </table>
@@ -26,4 +27,95 @@
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col s12">
+          <div class="clearfix">
+            <h4 class="left" style="margin:6px 0">Listeners</h4>
+            <a class="pad right teal-text" href="/add_listener"><i class="material-icons small">add_circle</i></a>
+          </div>
+        </div>
+        {% for l in g.listeners %}
+          <div class="col s12 m4">
+            {% set cardcolor = "white" if l.go_on else "blue-grey lighten-4"%}
+            <div class="card {{ cardcolor }}">
+              <div class="card-content">
+                <div class="clearfix">
+                  <span class="card-title left">{{ l.name }}</span>
+                  <a onclick="kill('{{l.id}}')" class="right red-text text-darken-4"><i class="material-icons small">cancel</i></a>
+                  {% if l.go_on %}
+                    <a onclick="pause('{{l.id}}')" class="right blue-grey-text text-darken-2"><i class="material-icons small">pause_circle_filled</i></a>
+                  {% else %}
+                    <a onclick="resume('{{l.id}}')" class="right teal-text text-darken-2"><i class="material-icons small">play_circle_filled</i></a>
+                  {% endif %}
+                </div>
+                <span>{{ l.listen_address[0] }}:<b>{{ l.listen_address[1] }}</b></span>
+                <br/>
+                {% for s in l.servers %}
+                  <span class="blue-grey-text">{{ s.name }}</span>
+                {% endfor %}
+                <br/>
+                <br/>
+                <table class="nopad">
+                  <tbody>
+                    {% for verb in l.msg_setup %}
+                      <tr>
+                        {% set color = "red darken-4 off" if l.msg_setup[verb]['deny'] else "teal on"%}
+                        <td> <a onclick="toggle('{{l.id}}','{{verb}}')" class="sentence"><span class="badge white-text bold {{color}}" style="width:72px;"><code>{{verb}}</code></span></a> </td>
+                        <td> <span>{{l.msg_count[verb]}}</span> </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
 {% endblock %}
+
+
+
+
+{% block body_end %}
+  
+  
+  <script>
+    $(document).ready(function(){ 
+    });
+    function kill(id) {
+      $.post("/kill_listener",{id:id},function(data){
+        if (data == "ack") {
+          window.location.reload();
+        }
+      })
+    }
+    function pause(id) {
+      $.post("/pause_listener",{id:id},function(data){
+        if (data == "ack") {
+          window.location.reload();
+        }
+      })
+    }
+    function resume(id) {
+      $.post("/resume_listener",{id:id},function(data){
+        if (data == "ack") {
+          window.location.reload();
+        }
+      })
+    }
+    function toggle(id,verb) {
+      $.post("/toggle_verb",{id:id,verb:verb},function(data){
+        if (data == "ack") {
+          window.location.reload();
+        }
+      })
+    }
+  </script>
+
+
+{% endblock %}
+
+
+
+
+

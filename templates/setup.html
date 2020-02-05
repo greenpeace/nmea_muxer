@@ -11,7 +11,7 @@
                 <div class="right pad-10"></div>
                 <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
                 <div class="right pad-10"></div>
-                <a href="/" class="btn-pad right btn-floating waves-effect waves-light red darken-2"><i class="material-icons" style="font-size: 28px">close</i></a>
+                <a href="/" class="btn-pad right btn-floating waves-effect waves-light red darken-4"><i class="material-icons" style="font-size: 28px">close</i></a>
               </div>
               <div class="card-content">
                 <table class="table highlight pad">
@@ -27,20 +27,20 @@
                     {% for iface in g.ifaces %}
                       <tr>
                         <td>
-                          <div class="input-field" style="width:144px;">
+                          <div class="input-field">
                             <input name="id_{{loop.index}}" value="{{iface[0]}}" type="hidden"/>
                             <input name="name_{{loop.index}}" value="{{iface[1]}}" type="text"/>
                           </div>
                         </td>
                         <td>
-                          <div style="margin-top:-12px;">
+                          <div style="margin-top:-12px;" style="max-width:144px;">
                             <input name="ip_{{loop.index}}" value="{{iface[2]}}" type="hidden"/>
                             <p class="large-text grey-text text-darken-2">{{iface[2]}}</p>
                           </div>
                         </td>
                         <td>
-                          <div class="input-field" style="width:72px;">
-                            <input name="port_{{loop.index}}" value="{{iface[3]}}" type="number">
+                          <div class="input-field" style="max-width:92px;">
+                            <input name="port_{{loop.index}}" value="{{iface[3]}}" type="text">
                           </div>
                         </td>
                         <td>

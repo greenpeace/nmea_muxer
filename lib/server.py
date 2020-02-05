@@ -39,6 +39,8 @@ class Server:
                 sleep(1)
                 self.start()
             else:
+                self.alive = False
+                self.go_on = False
                 print("Tried many times, didn't work")
                 pass
 
@@ -76,7 +78,7 @@ class Server:
             client = None
             try:
                 client, client_address = self.socket.accept()
-                print("  incoming: ",client_address)
+                print("    Incoming: ",client_address)
                 self.clients.append(client)
 
             except KeyboardInterrupt:

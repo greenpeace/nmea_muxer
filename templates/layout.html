@@ -1,65 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
-  <title>{{ g.title }}</title>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0"/>
+    <title>{{ g.title }}</title>
 
-  <!-- CSS  -->
-  <link href="static/css/material-icons.css" rel="stylesheet">
-  <link href="static/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-  <link href="static/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
-</head>
+    <!-- CSS  -->
+    <link href="static/css/material-icons.css" rel="stylesheet">
+    <link href="static/css/materialize.min.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+    <link href="static/css/style.css" type="text/css" rel="stylesheet" media="screen,projection"/>
+  </head>
 
-<body class="blue-grey lighten-4">
-	<header>
-		<nav class="black" role="navigation">
-      <div class="nav-wrapper container"><a id="logo-container" href="/"class="bold brand-logo"><small>NMEA<span class="blue-grey-text text-lighten-3">MUXER</span></small></a>
-				<ul class="right hide-on-med-and-down">
-					<li><a href="/setup"><i class="material-icons">build</i></a></li>
-				</ul>
+  <body class="blue-grey lighten-4">
+    <header>
+      <nav class="black" role="navigation">
+        <div class="nav-wrapper container">
+          <a id="logo-container" href="/" class="bold brand-logo" style="display: inline-flex; vertical-align: sub;">
+            &nbsp; 
+            <i class="material-icons white-text" style="font-size: 24px; width:12px; margin:0 9px 0 4px;">swap_vertical</i>
+            <small>NMEA<span class="blue-grey-text text-lighten-3">MUXER</span></small>
+          </a>
+          <ul class="right hide-on-med-and-down">
+            <li class="pad" style="padding-top:0;"> 
+              <span class="badge blue-grey white-text">L{{ g.listenerCount }}</span>
+              <span class="badge blue-grey white-text">S{{ g.serverCount }}</span>
+              <span class="badge blue-grey white-text">T{{ g.threadCount }}</span>
+            </li>
+          </ul>
 
-				<ul id="nav-mobile" class="sidenav">
-          <br/>
-					<li><a href="/">Console</a></li>
-					<li><a href="/setup">Server setup</a></li>
-				</ul>
-				<a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
-			</div>
-		</nav>
-	</header>
+          <ul id="nav-mobile" class="sidenav">
+            <br/>
+            <li><a href="/">Console</a></li>
+            <li><a href="/setup">Server setup</a></li>
+          </ul>
+          <a href="#" data-target="nav-mobile" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+        </div>
+      </nav>
+    </header>
 
-	<main>
-		<div class="container">
-			{% block content %}
-			{% endblock %}
-		</div>
-	</main>
+    <main>
+      <div class="container">
+        {% block content %}
+        {% endblock %}
+      </div>
+    </main>
 
-	<footer class='page-footer grey darken-4' style='display:none;'>
-		<div class='footer-copyright'>
-      <div class='container' style="margin-top:-18px;">
-				Made in the
-				<a class='bold white-text' href='http://materializecss.com'>Radio Shack Esperanza</a>
-				<div class='right'>
-					{{ g.ip }}
-					on
-          {{ g.day }}
-				</div>
-			</div>
-		</div>
-	</footer>
+    <footer class='page-footer grey darken-4'>
+      <div class='footer-copyright'>
+        <div class='container' style="margin-top:-18px;">
+          Made in the
+          <a class='bold white-text' href='http://materializecss.com'>Radio Shack Esperanza</a>
+          <div class='right'>
+            {{ g.ip }}
+            on
+            {{ g.day }}
+          </div>
+        </div>
+      </div>
+    </footer>
 
-  <!--  Scripts-->
-  <script src="static/js/jquery-3.4.1.min.js"></script>
-  <script src="static/js/materialize.min.js"></script>
-  <script src="static/js/init.js"></script>
-  <script>
-
-    $(document).ready(function(){ 
-      $("footer").slideDown();
-    });
-
-  </script>
+    <!--  Scripts-->
+    <script src="static/js/jquery-3.4.1.min.js"></script>
+    <script src="static/js/materialize.min.js"></script>
+    <script src="static/js/init.js"></script>
+    {% block body_end %}
+    {% endblock %}
   </body>
 </html>

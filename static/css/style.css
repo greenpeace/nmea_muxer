@@ -15,6 +15,8 @@ main {
 	flex: 1 0 auto;
 }
 
+a {cursor: pointer;}
+
 .bold { font-weight: bold; }
 .large-text { font-size: 16px; }
 
@@ -24,4 +26,13 @@ main {
 table.pad th, table.pad td { padding: 15px; }
 table.nopad th, table.nopad td { padding: 0; }
 
+.clearfix:before,
+.clearfix:after {
+display: table;
+content: " ";
+}
+
+.clearfix:after {
+clear: both;
+}
 
