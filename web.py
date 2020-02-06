@@ -106,6 +106,11 @@ def setup():
                         else:
                             server.pause()
 
+                        if 'throttle' in iface.keys():
+                            server.throttle = True
+                        else:
+                            server.throttle = False
+
                         if 'delete' in iface.keys():
                             for l in listeners:
                                 if server in l.servers:
@@ -149,7 +154,7 @@ def setup():
         g.slen = len(servers)
         for server in servers:
             if server.iface in netifaces.interfaces():
-                g.servers.append([server.iface,server.name,server.ip,server.port,(1 if server.alive else 0)])
+                g.servers.append([server.iface,server.name,server.ip,server.port,(1 if server.alive else 0),(1 if server.throttle else 0)])
         for name in netifaces.interfaces():
             iface = netifaces.ifaddresses(name)
             if 2 in iface.keys():
@@ -205,6 +210,7 @@ def edit_listener(id):
         print(request.form)
         try:
             listener.name = request.form['name']
+            listener.throttle = float(request.form['throttle'])
             listener.servers = []
             for k in request.form:
                 if re.match(r"^server_",k):
@@ -283,6 +289,7 @@ def reorder():
                 if l.id == lid:
                     ls.append(l)
         listeners = ls
+        update()
         return "ack"
 
     g.listeners = listeners
@@ -343,7 +350,7 @@ def init():
     if os.path.isfile("lib/settings/current.json"):
         settings.load()
         for s in settings.servers:
-            server = Server(tuple(s['bind_address']),s['iface'],s['name'])
+            server = Server(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'])
             servers.append(server)
             server.start()
         for l in settings.listeners:
@@ -351,7 +358,7 @@ def init():
             for s in servers:
                 if s.id in l['server_ids']:
                     ss.append(s)
-            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'])
+            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'])
             listeners.append(listener)
             listener.start()
         update()

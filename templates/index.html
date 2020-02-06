@@ -39,6 +39,7 @@
                     <th class="blue-grey-text">Port</th>
                     <th class="blue-grey-text">Interface</th>
                     <th class="blue-grey-text">Clients</th>
+                    <th class="blue-grey-text">Throttle</th>
                     <th class="blue-grey-text">Uptime</th>
                   </tr>
                 </thead>
@@ -60,6 +61,11 @@
                       <td class="blue-grey-text text-darken-1">
                         <b> {{ server.clients | length() }}</b>
                         <a onclick="clients('{{server.id}}','{{ server.name }}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
+                      </td>
+                      <td class="blue-grey-text text-darken-1">
+                        {% if server.throttle %}
+                          <span class="blue-grey-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">check</i></span>
+                        {% endif %}
                       </td>
                       <td class="blue-grey-text text-darken-1">
                         {{ server.get_uptime() }}
@@ -120,8 +126,10 @@
                     </li>
                   {% endfor %}
                 </ul>
-                <!--<span class="blue-grey-text text-darken-1"><b>Throttle: </b>{{ l.throttle }}s</span>
-                <br/>-->
+                {% if l.throttle > 0 %}
+                  <span class="blue-grey-text text-darken-1"><b>Throttle: </b>{{ l.throttle }}s</span>
+                  <br/>
+                {% endif %}
                 <span class="blue-grey-text text-darken-1"><b>Uptime: </b>{{ l.get_uptime() }}</span>
               </div>
             </div>

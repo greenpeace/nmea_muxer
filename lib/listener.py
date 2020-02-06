@@ -15,6 +15,7 @@ class Listener:
 
         self.status = "INIT"
         self.msg_count = {}
+        self.msg_queue = {}
         self.msg_order = []
         self.loop = asyncio.new_event_loop()
         self.thread = None
@@ -23,7 +24,7 @@ class Listener:
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle"]
 
     def start(self):
         self.go_on = True
@@ -97,11 +98,15 @@ class Listener:
 
                     if 'deny' in self.msg_setup[verb].keys():
                         pass
+
                     else:
                         if verb in self.msg_count:
                             self.msg_count[verb] += 1
                         else:
                             self.msg_count[verb] = 1
+
+                        if self.throttle > 0:
+                            self.msg_queue[verb] = payload
 
                         for server in self.servers:
                             server.emit(payload)

@@ -7,13 +7,14 @@ import re, socket
 class Server:
 
 
-    def __init__(self,bind_address,iface="",name="",verbose=False):
+    def __init__(self,bind_address,iface="",name="",throttle=False,verbose=False):
         self.bind_address = bind_address
         self.name = name
         self.iface = iface
         self.id = bind_address[0]+":"+str(bind_address[1])
         self.ip = bind_address[0]
         self.port = bind_address[1]
+        self.throttle = throttle
         self.verbose = verbose
 
         self.thread = None
@@ -24,7 +25,7 @@ class Server:
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["bind_address","name","iface"]
+        self.for_export = ["bind_address","name","iface","throttle"]
         self.tries = 3
         self.status = "INIT"
 
@@ -78,7 +79,7 @@ class Server:
     def emit(self,sentence):
         if self.verbose:
             print(sentence) 
-        if self.alive:
+        if self.alive and not self.throttle:
             for client in self.clients:
                 try:
                     client.sendall(sentence)

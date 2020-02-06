@@ -21,6 +21,7 @@
                     {% for s in g.servers %}
                       <th>{{ s.name }}</th>
                     {% endfor %}
+                    <th>Throttle</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -55,6 +56,11 @@
                         </div>
                       </td>
                     {% endfor %}
+                    <td>
+                      <div class="input-field">
+                        <input name="throttle" value="{{g.l.throttle}}" type="number"/>
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>

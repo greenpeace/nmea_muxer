@@ -18,6 +18,7 @@
                       <th>IP</th>
                       <th>Port</th>
                       <th>Active</th>
+                      <th>Throttle</th>
                       <th>Delete</th>
                     </tr>
                   </thead>
@@ -48,6 +49,18 @@
                                 <input type="checkbox" checked=true name="active_{{loop.index}}">
                               {% else %}
                                 <input type="checkbox" name="active_{{loop.index}}">
+                              {% endif %}
+                              <span class="lever"></span>
+                            </label>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="switch">
+                            <label>
+                              {% if iface[5] == 1 %}
+                                <input type="checkbox" checked=true name="throttle_{{loop.index}}">
+                              {% else %}
+                                <input type="checkbox" name="throttle_{{loop.index}}">
                               {% endif %}
                               <span class="lever"></span>
                             </label>
