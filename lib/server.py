@@ -1,21 +1,21 @@
-import re
-import socket
 from threading import Thread
 from time      import sleep
 from datetime  import datetime as dt
-from .utils import *
+from .utils    import *
+import re, socket
 
 class Server:
 
 
     def __init__(self,bind_address,iface="",name="",verbose=False):
-        self.status = "DOWN"
         self.bind_address = bind_address
         self.name = name
         self.iface = iface
+        self.id = bind_address[0]+":"+str(bind_address[1])
         self.ip = bind_address[0]
         self.port = bind_address[1]
         self.verbose = verbose
+
         self.thread = None
         self.alive = True
         self.go_on = True
@@ -26,6 +26,7 @@ class Server:
         self.started_at = dt.now()
         self.for_export = ["bind_address","name","iface"]
         self.tries = 3
+        self.status = "INIT"
 
     def start(self):
         self.tries -= 1
@@ -59,7 +60,7 @@ class Server:
         if self.socket:
             self.socket.shutdown(socket.SHUT_RDWR)
         self.thread.join()
-        self.status = "DOWN"
+        self.status = "KILLED"
 
 
     def pause(self):
@@ -98,7 +99,7 @@ class Server:
             client = None
             try:
                 client, client_address = self.socket.accept()
-                print("    Incoming: ",client_address)
+                print("    Incoming client: ",client_address)
                 self.clients.append(client)
 
             except KeyboardInterrupt:
@@ -108,15 +109,15 @@ class Server:
                 print()
 
             except OSError as err:
-                if err.errno != 22:
-                    print()
-                    print("    Closing Server:",err)
-                    print()
-                else:
+                if err.errno == 22:
                     if client:
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
+                else:
+                    print()
+                    print("    Closing Server:",err)
+                    print()
 
 
             except Exception as err:

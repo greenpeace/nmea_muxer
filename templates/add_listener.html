@@ -1,69 +1,61 @@
-{% extends "layout.html" %}
-{% block content %}
 
+
+    <div class="modal-content">
       <div class="row">
         <br/>
-        <div class="col s12 l8 offset-l2">
+        <div class="col s12">
           <form method="post" action="/add_listener" id="server_form">
-            <div class="card">
-              <div class="card-content">
-                <span class="card-title left pad">Add NMEA Listener</span>
-                <div class="right pad-10"></div>
-                <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
-                <div class="right pad-10"></div>
-                <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
-              </div>
-              <div class="card-content">
-                <table class="table highlight pad">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>IP</th>
-                      <th>Port</th>
-                      {% for s in g.servers %}
-                        <th>{{ s.name }}</th>
-                      {% endfor %}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
+              <span class="card-title left pad">Add NMEA Listener</span>
+              <div class="right pad-10"></div>
+              <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
+              <div class="right pad-10"></div>
+              <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+              <table class="table highlight pad responsive-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>IP</th>
+                    <th>Port</th>
+                    {% for s in g.servers %}
+                      <th>{{ s.name }}</th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div class="input-field">
+                        <input name="name" value="" type="text"/>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="input-field" style="width:120px;">
+                        <input name="ip" value="" type="text"/>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="input-field" style="max-width:72px;">
+                        <input name="port" value="" min="0" max="65535" type="number">
+                      </div>
+                    </td>
+                    {% for s in g.servers %}
                       <td>
-                        <div class="input-field">
-                          <input name="name" value="" type="text"/>
+                        <div class="switch">
+                          <label>
+                            <input type="checkbox" checked=true name="server_{{s.id}}">
+                            <span class="lever"></span>
+                          </label>
                         </div>
                       </td>
-                      <td>
-                        <div class="input-field" style="width:120px;">
-                          <input name="ip" value="" type="text"/>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="input-field" style="max-width:72px;">
-                          <input name="port" value="" min="0" max="65535" type="number">
-                        </div>
-                      </td>
-                      {% for s in g.servers %}
-                        <td>
-                          <div class="switch">
-                            <label>
-                              <input type="checkbox" checked=true name="server_{{s.iface}}">
-                              <span class="lever"></span>
-                            </label>
-                          </div>
-                        </td>
-                      {% endfor %}
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                    {% endfor %}
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </form>
         </div>
       </div>
+    </div>
 
-{% endblock %}
-
-{% block body_end %}
   {{ g.error | safe }}
-{% endblock %}
 

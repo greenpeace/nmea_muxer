@@ -72,3 +72,40 @@ span.badge.inline {
   transition:0.1s;
 }
 
+
+
+
+
+.switch.red {
+  background-color: transparent !important;
+}
+.switch.red label input[type=checkbox]:checked + .lever {
+  background-color: #ef9a9a;
+}
+.switch.red label input[type=checkbox]:checked + .lever:after {
+  background-color: #b71c1c;
+}
+ 
+.switch.red label .lever {
+  content: "";
+  display: inline-block;
+  position: relative;
+  width: 36px;
+  height: 14px;
+  background-color: rgba(0,0,0,0.38);
+  border-radius: 15px;
+  margin-right: 10px;
+  -webkit-transition: background 0.3s ease;
+  transition: background 0.3s ease;
+  vertical-align: middle;
+  margin: 0 16px;
+}
+ 
+ 
+.switch.red input[type=checkbox]:checked:not(:disabled) ~ .lever:active::before,
+.switch.red input[type=checkbox]:checked:not(:disabled).tabbed:focus ~ .lever::before {
+  -webkit-transform: scale(2.4);
+          transform: scale(2.4);
+  background-color: rgba(239, 154, 154, 0.4);
+}
+

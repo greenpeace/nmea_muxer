@@ -1,19 +1,16 @@
-{% extends "layout.html" %}
-{% block content %}
-
-      <div class="row">
-        <br/>
-        <div class="col s12 l8 offset-l2">
-          <form method="post" action="/setup" id="server_form">
-            <div class="card">
-              <div class="card-content">
-                <span class="card-title left pad">Talker Setup</span>
-                <div class="right pad-10"></div>
-                <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
-                <div class="right pad-10"></div>
-                <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
-              </div>
-              <div class="card-content">
+  <div class="modal-content">
+    <br/>
+    <div class="row">
+      <form method="post" action="/setup" id="server_form">
+        <div class="right pad-10"></div>
+        <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
+        <div class="right pad-10"></div>
+        <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+        <div class="col s12">
+              {% if g.servers != [] %}
+                <div class="clearfix">
+                  <h5 class="left" style="margin:16px 0">&nbsp;&nbsp;Talkers</h5>
+                </div>
                 <table class="table highlight pad">
                   <thead>
                     <tr>
@@ -21,10 +18,11 @@
                       <th>IP</th>
                       <th>Port</th>
                       <th>Active</th>
+                      <th>Delete</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {% for iface in g.ifaces %}
+                    {% for iface in g.servers %}
                       <tr>
                         <td>
                           <div class="input-field">
@@ -55,20 +53,75 @@
                             </label>
                           </div>
                         </td>
+                        <td>
+                          <div class="switch red">
+                            <label>
+                              <input type="checkbox" name="delete_{{loop.index}}">
+                              <span class="lever"></span>
+                            </label>
+                          </div>
+                        </td>
                       </tr>
                     {% endfor %}
                   </tbody>
                 </table>
+              {% endif %}
+              <div class="clearfix">
+                <h5 class="left" style="margin:16px 0">&nbsp;&nbsp;Available interfaces</h5>
               </div>
-            </div>
-          </form>
-        </div>
+              <table class="table highlight pad">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>IP</th>
+                    <th>Port</th>
+                    <th>Active</th>
+                    <th>&nbsp;</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for iface in g.ifaces %}
+                    <tr>
+                      <td>
+                        <div class="input-field">
+                          <input name="id_{{ g.slen + loop.index}}" value="{{iface[0]}}" type="hidden"/>
+                          <input name="name_{{ g.slen + loop.index}}" value="{{iface[1]}}" type="text"/>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="margin-top:-12px;" style="max-width:144px;">
+                          <input name="ip_{{ g.slen + loop.index}}" value="{{iface[2]}}" type="hidden"/>
+                          <p class="large-text grey-text text-darken-2">{{iface[2]}}</p>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="input-field" style="max-width:92px;">
+                          <input name="port_{{ g.slen + loop.index}}" value="{{iface[3]}}" min="0" max="65535" type="text">
+                        </div>
+                      </td>
+                      <td>
+                        <div class="switch">
+                          <label>
+                            {% if iface[4] == 1 %}
+                              <input type="checkbox" checked=true name="active_{{ g.slen + loop.index}}">
+                            {% else %}
+                              <input type="checkbox" name="active_{{ g.slen + loop.index}}">
+                            {% endif %}
+                            <span class="lever"></span>
+                          </label>
+                        </div>
+                      </td>
+                      <td style="width:98px">&nbsp;</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+          </div>
+        </form>
       </div>
+    </div>
+  </div>
 
-{% endblock %}
-
-{% block body_end %}
   {{ g.error | safe }}
-{% endblock %}
 
 

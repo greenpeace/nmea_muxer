@@ -2,8 +2,8 @@ import json
 
 class Settings:
 
-    def __init__(self,freq=1,servers=[],listeners=[]):
-        self.freq = freq
+    def __init__(self,period=0,servers=[],listeners=[]):
+        self.period = period
         self.servers = servers
         self.listeners = listeners
 
@@ -12,7 +12,7 @@ class Settings:
 
     def export(self):
         sts = {"settings":{}}
-        sts["settings"]["freq"] = self.freq
+        sts["settings"]["period"] = self.period
         sts["servers"] = self.servers
         sts["listeners"] = self.listeners
         return sts

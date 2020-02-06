@@ -12,7 +12,9 @@ def time_ago(seconds):
     d, rem = divmod(seconds, 86400)
     h, rem = divmod(rem, 3600)
     m, s = divmod(rem, 60)
-    if s < 1:s = 1
+    if s < 1:s = 0
     locals_ = locals()
     magnitudes_str = ("{n}{magnitude}".format(n=int(locals_[magnitude]), magnitude=magnitude) for magnitude in ("d", "h", "m", "s") if locals_[magnitude])
-    return " ".join(magnitudes_str)
+    result = " ".join(magnitudes_str) if s >= 1 else "N/A"
+    return result
+

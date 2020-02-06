@@ -7,7 +7,7 @@ from datetime       import datetime as dt
 
 import threading
 import netifaces
-import socket, json, re, os
+import socket, json, re, os, resource
 
 from lib.server     import Server
 from lib.listener   import Listener
@@ -21,7 +21,6 @@ app.config['SECRET_KEY'] = 'M-LkyLF&sid=379941accd8541ef9f9c7e8efb323c82'
 socketio = SocketIO(app, async_mode="gevent")
 servers = []
 listeners = []
-ship_id = "212"
 
 settings = Settings()
 
@@ -35,7 +34,7 @@ def before_request():
         g.ip = request.remote_addr
     g.day = dt.now().strftime("%a, %b %d")
     g.title = "NMEA MUXER"
-    g.threadCount = threading.activeCount()
+    g.threadCount = threading.active_count()
     g.serverCount = len(servers)
     g.listenerCount = len(listeners)
     g.clientCount = 0
@@ -53,11 +52,11 @@ def index():
         g.listeners = listeners
         return render_template("index.html")
 
-@app.route("/clients/<iface>")
-def clients(iface):
+@app.route("/clients/<sid>")
+def clients(sid):
     server = None
     for s in servers:
-        if s.iface == iface:
+        if s.id == sid:
             server = s
 
     if server:
@@ -65,10 +64,11 @@ def clients(iface):
         if len(g.s.clients) > 0:
             g.clients = []
             for c in server.clients:
-                try:
-                    g.clients.append([socket.gethostbyaddr(c.getpeername()[0])[0],c.getpeername()[0],c.getpeername()[1]])
-                except:
-                    g.clients.append(["[unknown]",c.getpeername()[0],c.getpeername()[1]])
+                g.clients.append(["",c.getpeername()[0],c.getpeername()[1]])
+                #try:
+                #    g.clients.append([socket.gethostbyaddr(c.getpeername()[0])[0],c.getpeername()[0],c.getpeername()[1]])
+                #except:
+                #    g.clients.append(["---",c.getpeername()[0],c.getpeername()[1]])
             return render_template("clients.html")
         else:
             return "<h6>No client registered.</h6>"
@@ -86,8 +86,9 @@ def setup():
             for iface in deformalize(request.form):
                 hold = False
                 print(iface)
+                iid = iface['ip']+":"+str(iface['port'])
                 for server in servers:
-                    if iface['id'] == server.iface:
+                    if iid == server.id:
                         if int(iface['port']) != server.port:
                             for l in listeners:
                                 if server in l.servers:
@@ -104,6 +105,15 @@ def setup():
                             server.resume()
                         else:
                             server.pause()
+
+                        if 'delete' in iface.keys():
+                            for l in listeners:
+                                if server in l.servers:
+                                    l.servers.remove(server)
+                            servers.remove(server)
+                            server.kill()
+                            hold = True
+
 
                 if not hold:
                     try:
@@ -126,24 +136,24 @@ def setup():
 
     if servers == []:
         g.ifaces = []
+        g.slen = len(servers)
         for name in netifaces.interfaces():
             iface = netifaces.ifaddresses(name)
-            if 2 in iface.keys() and iface[2][0]['addr'].split('.')[2] == ship_id:
+            if 2 in iface.keys():
                 g.ifaces.append([name,name,iface[2][0]['addr']])
         return render_template("setup.html")
 
     else:
+        g.servers = []
         g.ifaces = []
-        ids = []
+        g.slen = len(servers)
         for server in servers:
             if server.iface in netifaces.interfaces():
-                g.ifaces.append([server.iface,server.name,server.ip,server.port,(1 if server.alive else 0)])
-                ids.append(server.iface)
+                g.servers.append([server.iface,server.name,server.ip,server.port,(1 if server.alive else 0)])
         for name in netifaces.interfaces():
-            if not name in ids:
-                iface = netifaces.ifaddresses(name)
-                if 2 in iface.keys() and iface[2][0]['addr'].split('.')[2] == ship_id:
-                    g.ifaces.append([name,name,iface[2][0]['addr']])
+            iface = netifaces.ifaddresses(name)
+            if 2 in iface.keys():
+                g.ifaces.append([name,name,iface[2][0]['addr']])
         return render_template("setup.html")
 
 
@@ -171,7 +181,7 @@ def add_listener():
             for k in request.form:
                 if re.match(r"^server_",k):
                     for s in servers:
-                        if s.iface == re.sub(r"^server_","",k):
+                        if s.id == re.sub(r"^server_","",k):
                             listener.servers.append(s)
             listener.update()
             update()
@@ -192,13 +202,14 @@ def edit_listener(id):
             listener = l
 
     if request.method == 'POST' and listener:
+        print(request.form)
         try:
             listener.name = request.form['name']
             listener.servers = []
             for k in request.form:
                 if re.match(r"^server_",k):
                     for s in servers:
-                        if s.iface == re.sub(r"^server_","",k):
+                        if s.id == re.sub(r"^server_","",k):
                             listener.servers.append(s)
             listener.update()
             update()
@@ -213,7 +224,7 @@ def edit_listener(id):
         g.servers = servers
         return render_template("edit_listener.html")
     else:
-        pass
+        return ""
 
 
 @app.route("/kill_listener",methods=["POST"])
@@ -256,9 +267,42 @@ def resume_listener():
         if listener:
             listener.start()
             update()
+            print("ack")
             return "ack"
         else:
             return "nack"
+
+@app.route("/reorder",methods=["GET","POST"])
+def reorder():
+    if request.method == 'POST':
+        global listeners
+        ls = []
+        for lid in request.form.getlist('order[]'):
+            for l in listeners:
+                print(l.id)
+                if l.id == lid:
+                    ls.append(l)
+        listeners = ls
+        return "ack"
+
+    g.listeners = listeners
+    return render_template("reorder.html")
+
+@app.route("/reorder/<lid>",methods=["POST"])
+def reorder_sentences(lid):
+    if request.method == 'POST':
+        listener = None
+        for l in listeners:
+            if l.id == lid:
+                listener = l
+        if listener:
+            print(request.form)
+            listener.msg_order = request.form.getlist('order[]')
+            update()
+            return "ack"
+        else:
+            return "nack"
+
 
 @app.route("/toggle_verb",methods=["POST"])
 def toggle_verb():
@@ -305,7 +349,7 @@ def init():
         for l in settings.listeners:
             ss = []
             for s in servers:
-                if s.iface in l['server_ids']:
+                if s.id in l['server_ids']:
                     ss.append(s)
             listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'])
             listeners.append(listener)

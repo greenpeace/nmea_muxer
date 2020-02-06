@@ -1,7 +1,7 @@
 from threading import Thread
 from datetime  import datetime as dt
 from .utils import *
-import re, asyncio, random, string
+import os, re, asyncio, random, string
 
 class Listener:
     def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0):
@@ -9,12 +9,13 @@ class Listener:
         self.listen_address = listen_address
         self.name = name
         self.servers = servers
-        self.server_ids = list(map(lambda s: s.iface, servers))
+        self.server_ids = list(map(lambda s: s.id, servers))
         self.msg_setup = msg_setup
         self.throttle = throttle
 
-        self.status = "DOWN"
+        self.status = "INIT"
         self.msg_count = {}
+        self.msg_order = []
         self.loop = asyncio.new_event_loop()
         self.thread = None
         self.reader = None
@@ -22,7 +23,7 @@ class Listener:
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","server_ids","go_on"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on"]
 
     def start(self):
         self.go_on = True
@@ -31,27 +32,32 @@ class Listener:
         if not self.thread:
             self.thread = Thread(target=self.async_start)
             self.thread.start()
+        elif not self.status == "PAUSED":
+            self.thread.join()
+            self.thread = Thread(target=self.async_start)
+            self.thread.start()
+        self.status = "INIT"
 
     def pause(self):
-        self.status = "DOWN"
+        self.status = "PAUSED"
         self.go_on = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
 
     def kill(self):
-        self.status = "DOWN"
+        self.status = "KILLED"
         self.alive = False
         self.go_on = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
         self.thread.join()
 
     def update(self):
-        self.server_ids = list(map(lambda s: s.iface, self.servers))
+        self.server_ids = list(map(lambda s: s.id, self.servers))
 
 
     def downdate(self,servers):
         self.servers = []
         for s in servers:
-            if s.iface in self.server_ids:
+            if s.id in self.server_ids:
                 self.servers.append(s)
 
     def async_start(self):
@@ -59,16 +65,18 @@ class Listener:
             self.loop.run_until_complete(self.__async__start())
 
     async def __async__start(self):
+
         if not self.reader:
+            print(self.name, "no reader")
             try:
                 self.reader, writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
-                self.status = "Connection refused"
+                self.status = "CONN RFSD"
                 print(self.name, self.status)
                 self.go_on = False
                 self.alive = False
             except OSError:
-                self.status = "Socket busy"
+                self.status = "SOCK BUSY"
                 print(self.name, self.status)
                 self.go_on = False
                 self.alive = False
@@ -77,12 +85,15 @@ class Listener:
             try:
                 payload = await self.reader.readline()
                 sentence = payload.decode().strip()
-                self.status = "UP"
                 if re.match(r"^[\$!]\w{4,5},",sentence) and self.go_on:
+                    self.status = "UP"
                     verb = sentence.split(",")[0][1:]
 
                     if not verb in self.msg_setup:
                         self.msg_setup[verb] = {}
+
+                    if not verb in self.msg_order:
+                        self.msg_order.append(verb)
 
                     if 'deny' in self.msg_setup[verb].keys():
                         pass

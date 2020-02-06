@@ -1,0 +1,50 @@
+
+  <div class="modal-content">
+    <div class="row">
+      <br/>
+      <div class="col s12">
+
+        <div class="clearfix">
+          <a onclick="submit()" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></a>
+          <div class="right pad-10"></div>
+          <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+        </div>
+        <h5 class="card-title">Reorder NMEA Listeners</h5>
+
+        <ul class="plain sortable">
+          {% for l in g.listeners %}
+            <li class="ui-state-default">
+              {% set color = "teal on" if l.go_on else "blue-grey lighten-2 off" %}
+              <span class="badge inline white-text bold {{color}}" style="width:100%">
+                <i class="material-icons" style="font-size:16px;">menu</i>
+                <span class="data" data-id="{{ l.id }}">{{ l.name }}</span>
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+      $( "ul.sortable" ).sortable({
+        update: function( event, ui ) {
+          console.log($(ui.item).closest(".card").attr("id"));
+        }
+      });
+      function submit() {
+        result = [];
+        $.each($("ul.sortable > li > .badge"),function(i,e){
+          result.push($(e).find(".data").data("id"))
+        })
+        $.post("/reorder",{order:result},function(data){
+          if (data == "ack") {
+            window.location.reload();
+          }
+        })
+      }
+  </script>
+
+  {{ g.error | safe }}
+
