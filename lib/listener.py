@@ -112,7 +112,7 @@ class Listener:
                             server.emit(payload)
 
             except Exception as err:
-                print(str(err))
+                print(self.name, str(err))
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     print(self.name, err)
                     self.go_on = False
