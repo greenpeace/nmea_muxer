@@ -18,7 +18,7 @@ app = Flask(__name__)
 #app._static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 app.config['SECRET_KEY'] = 'M-LkyLF&sid=379941accd8541ef9f9c7e8efb323c82'
 
-socketio = SocketIO(app, async_mode="gevent")
+socketio = SocketIO(app,async_mode='threading')
 servers = []
 listeners = []
 
@@ -346,6 +346,10 @@ def register():
     return client_message
 
 
+@socketio.on('my_ping', namespace='/test')
+def ping_pong():
+    print("PING! PONG!")
+
 def init():
     if os.path.isfile("lib/settings/current.json"):
         settings.load()
@@ -371,6 +375,7 @@ def update():
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
+    #socketio.run(app, debug=True)
 
 
 

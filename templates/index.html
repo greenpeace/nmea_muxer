@@ -146,6 +146,8 @@
   
   <script>
     $(document).ready(function(){ 
+			socket = io("/test");
+			socket.emit('my_ping');
       $('#clients').modal();
       $('#talkers').modal({startingTop:"-20%",endingTop:"4%"});
       $('#listener').modal();
