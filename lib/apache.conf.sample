@@ -1,0 +1,8 @@
+<virtualHost *:80>
+  ServerName pipe.myez.gl3
+  DocumentRoot /var/www/pipe/
+  ProxyRequests Off
+
+  ProxyPass / http://127.0.0.1:5000/ retry=0
+  ProxyPassReverse / http://127.0.0.1:5000/ retry=0
+</virtualHost>

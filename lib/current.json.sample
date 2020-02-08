@@ -1,0 +1,137 @@
+{
+  "listeners": [
+    {
+      "go_on": true,
+      "id": "WJ06MEOO",
+      "listen_address": [
+        "192.168.212.8",
+        "7006"
+      ],
+      "msg_order": [
+        "AIVDM"
+      ],
+      "msg_setup": {
+        "AIVDM": {}
+      },
+      "name": "AIS",
+      "server_ids": [
+        "192.168.212.181:54321",
+        "172.16.212.181:12345"
+      ],
+      "throttle": 10.0
+    },
+    {
+      "go_on": true,
+      "id": "HXSMQD3T",
+      "listen_address": [
+        "192.168.212.8",
+        "7004"
+      ],
+      "msg_order": [
+        "GPVTG",
+        "GPZDA",
+        "GPGGA",
+        "GPGLL",
+        "GPHDT"
+      ],
+      "msg_setup": {
+        "GPGGA": {},
+        "GPGLL": {},
+        "GPHDT": {},
+        "GPVTG": {},
+        "GPZDA": {}
+      },
+      "name": "GPS",
+      "server_ids": [
+        "192.168.212.181:54321",
+        "172.16.212.181:12345"
+      ],
+      "throttle": 0
+    },
+    {
+      "go_on": true,
+      "id": "V87HMTL3",
+      "listen_address": [
+        "192.168.212.8",
+        "7008"
+      ],
+      "msg_order": [
+        "IIMWV",
+        "IIXDR",
+        "SDDBT",
+        "SDDPT",
+        "PFEC"
+      ],
+      "msg_setup": {
+        "IIMWV": {},
+        "IIXDR": {},
+        "PFEC": {
+          "deny": true
+        },
+        "SDDBT": {},
+        "SDDPT": {}
+      },
+      "name": "Wind and Depth",
+      "server_ids": [
+        "192.168.212.181:54321",
+        "172.16.212.181:12345"
+      ],
+      "throttle": 0
+    },
+    {
+      "go_on": false,
+      "id": "PL530XGU",
+      "listen_address": [
+        "192.168.212.17",
+        1
+      ],
+      "msg_order": [],
+      "msg_setup": {},
+      "name": "Real",
+      "server_ids": [
+        "192.168.212.181:54321",
+        "172.16.212.181:12345"
+      ],
+      "throttle": 0
+    },
+    {
+      "go_on": false,
+      "id": "JE7506A1",
+      "listen_address": [
+        "192.168.212.8",
+        12342
+      ],
+      "msg_order": [],
+      "msg_setup": {},
+      "name": "Test",
+      "server_ids": [
+        "192.168.212.181:54321",
+        "172.16.212.181:12345"
+      ],
+      "throttle": 0
+    }
+  ],
+  "servers": [
+    {
+      "bind_address": [
+        "192.168.212.181",
+        54321
+      ],
+      "iface": "enp3s0",
+      "name": "Shipnet",
+      "throttle": false
+    },
+    {
+      "bind_address": [
+        "172.16.212.181",
+        12345
+      ],
+      "iface": "enx9cebe8141dfc",
+      "name": "QNET",
+      "throttle": true
+    }
+  ],
+  "settings": {
+    "period": 0
+  }
+}
