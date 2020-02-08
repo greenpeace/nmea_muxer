@@ -113,7 +113,7 @@ class Listener:
 
             except Exception as err:
                 print(str(err))
-                if not str(err) == "Separator is not found, and chunk exceed the limit":
+                if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     print(self.name, err)
                     self.go_on = False
                     self.alive = False
