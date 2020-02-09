@@ -185,6 +185,7 @@ def add_listener():
             print(request.form)
             ss = servers if ('publish' in request.form.keys()) else []
             listener = Listener( (request.form['ip'], int(request.form['port'])), "", request.form['name'])
+            listener.color = request.form['color']
             listener.start()
             listeners.append(listener)
             listener.servers = []
@@ -200,6 +201,7 @@ def add_listener():
             g.error = '<script>M.toast({html:"'+str(err)+'",classes:"red darken-4"})</script>'
 
 
+    g.colors = colors
     return render_template("add_listener.html")
 
 

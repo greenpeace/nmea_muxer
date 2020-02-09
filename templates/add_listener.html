@@ -19,6 +19,7 @@
                     {% for s in g.servers %}
                       <th>{{ s.name }}</th>
                     {% endfor %}
+                    <th>Color</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -48,6 +49,18 @@
                         </div>
                       </td>
                     {% endfor %}
+                    <td>
+                      <div class="input-field">
+                        <select name="color">
+                          {% for color in g.colors %} 
+                            {% if "#ffffff" == g.colors[color] %}
+                              <option value="{{ g.colors[color] }}" selected> {{ color }} </option>
+                            {% else %}
+                              <option value="{{ g.colors[color] }}"> {{ color }} </option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </div>
                   </tr>
                 </tbody>
               </table>
@@ -56,6 +69,16 @@
         </div>
       </div>
     </div>
+
+  <script>
+    colors = {{ g.colors | safe }};
+    $('select').formSelect({classes:"colorselect"});
+    $.each($(".colorselect ul li"),function(i,e){
+      ctext = $(e).text().trim()
+      $(e).prepend("<span class='rect' style='background-color:"+colors[ctext]+";'>&nbsp;</span>")
+    })
+  </script>
+
 
   {{ g.error | safe }}
 
