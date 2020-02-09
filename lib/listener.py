@@ -110,7 +110,7 @@ class Listener:
                             self.msg_queue[verb] = payload
 
                         for server in self.servers:
-                            server.emit(payload)
+                            server.emit(payload,self.color)
 
             except Exception as err:
                 print(self.name, str(err))

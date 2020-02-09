@@ -23,6 +23,7 @@ class Server:
         self.thread = None
         self.alive = True
         self.go_on = True
+        self.push = False
 
         self.throttle_thread = None
         self.throttle_steps={}
@@ -89,7 +90,7 @@ class Server:
             self.alive = True
             self.uptime += (dt.now() - self.started_at).total_seconds()
 
-    def emit(self,sentence):
+    def emit(self,sentence,color):
         if self.verbose:
             print(sentence) 
         if self.alive and not self.throttle:
@@ -106,6 +107,8 @@ class Server:
                         print()
                         print("    EXCEPTION for Server:",err)
                         print()
+            if self.pusher and self.push:
+                self.pusher.push(sentence.decode().strip(),self.id,color)
 
 
     def update_throttle(self):
@@ -189,6 +192,7 @@ class Server:
                             #print("tt: ",start, l.name,  verb, verb in l.msg_queue.keys())
                             if verb in l.msg_queue.keys():
                                 sentence = l.msg_queue[verb]
+                                del l.msg_queue[verb]
                                 for client in self.clients:
                                     try:
                                         client.sendall(sentence)
@@ -203,7 +207,8 @@ class Server:
                                             print("    EXCEPTION for Server:",err)
                                             print()
                                     sleep(0.01)
-                                del l.msg_queue[verb]
+                                if self.pusher and self.push:
+                                    self.pusher.push(sentence.decode().strip(),self.id,l.color)
             #print(start, period, ls)
             sleep(solong)
             self.throttle_step = 0 if self.throttle_step >= len(self.throttle_steps) - 1 else self.throttle_step + 1

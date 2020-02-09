@@ -1,4 +1,5 @@
 from math import gcd
+import re
 
 def deformalize(form):
     result = {}
@@ -32,10 +33,11 @@ def gcd_list(a):
     return res
 
 class Pusher:
-    def __init__(self,servers=[]):
+    def __init__(self,socketio,servers=[]):
+        self.socketio = socketio
         self.servers = servers
 
-    def push(self,sentence, sid=0):
-        socketio.emit('feed', {'data': sentence}, namespace='/'+re.sub("\D","_",sid))
+    def push(self, sentence, sid=0, color="#ffffff"):
+        self.socketio.emit('feed', {"sentence": sentence, "color":color}, namespace='/'+re.sub("\D","_",sid))
         
 

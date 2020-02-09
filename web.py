@@ -19,7 +19,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'M-LkyLF&sid=379941accd8541ef9f9c7e8efb323c82'
 
 socketio = SocketIO(app,async_mode='threading')
-pusher = Pusher()
+pusher = Pusher(socketio)
 servers = []
 listeners = []
 
@@ -129,7 +129,7 @@ def setup():
 
                 if not hold:
                     try:
-                        server = Server((iface['ip'],int(iface['port'])),iface['id'],iface['name'])
+                        server = Server((iface['ip'],int(iface['port'])),iface['id'],iface['name'],('throttle' in iface.keys() ),listeners, pusher)
                         server.start()
                         server.alive = ('active' in iface.keys() )
                         servers.append(server)
@@ -352,6 +352,26 @@ def toggle_verb():
 
 
 
+@app.route("/feed/<sid>")
+def feed(sid):
+    g.s = None
+    for s in servers:
+        if sid == s.id:
+            print("pushing", s.name)
+            s.push = True
+            g.s = s
+    g.namespace = '/'+re.sub("\D","_",sid)
+    return render_template("feed.html")
+
+@app.route("/nofeed/<sid>")
+def nofeed(sid):
+    g.s = None
+    for s in servers:
+        if sid == s.id:
+            g.s = s
+    s.push = False
+    return ""
+
 @app.route("/register")
 def register():
     global listen_address
@@ -365,7 +385,7 @@ def init():
     if os.path.isfile("lib/settings/current.json"):
         settings.load()
         for s in settings.servers:
-            server = Server(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'])
+            server = Server(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher)
             servers.append(server)
             server.start()
         for l in settings.listeners:

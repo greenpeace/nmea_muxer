@@ -73,7 +73,7 @@
                         {{ server.get_uptime() }}
                       </td>
                       <td class="blue-grey-text text-darken-1">
-                        <a onclick="feed('{{server.id}}','{{ server.name }}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
+                        <a onclick="feed('{{server.id}}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
                       </td>
                     </tr>
                   {% endfor %}
@@ -151,6 +151,7 @@
   
   
   <script>
+    var socket;
     $(document).ready(function(){ 
 			//socket = io("/test");
 			//socket.emit('my_ping');
@@ -158,7 +159,13 @@
       $('#talkers').modal({startingTop:"-20%",endingTop:"4%"});
       $('#listener').modal();
       $('#reorder').modal();
-      $('#feed').modal({startingTop:"-20%",endingTop:"4%"});
+      $('#feed').modal({
+        startingTop:"-20%",
+        endingTop:"7%",
+        onCloseEnd: function(){
+          socket.close();
+        }
+      });
       $( "ul.sortable" ).sortable({
         update: function( event, ui ) {
           id = $(ui.item).closest(".card").attr("id");
@@ -230,7 +237,7 @@
       });
     }
 
-    function feed(sid,sname) {
+    function feed(sid) {
       $.get("/feed/"+sid,function(data){
         if (data.length > 0) {
           $('#feed').html(data);
