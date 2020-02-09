@@ -19,6 +19,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'M-LkyLF&sid=379941accd8541ef9f9c7e8efb323c82'
 
 socketio = SocketIO(app,async_mode='threading')
+pusher = Pusher()
 servers = []
 listeners = []
 
@@ -288,7 +289,6 @@ def resume_listener():
         if listener:
             listener.start()
             update()
-            print("ack")
             return "ack"
         else:
             return "nack"
@@ -386,6 +386,7 @@ def update():
     settings.save(servers,listeners)
     for s in servers:
         s.listeners = listeners
+    pusher.servers = servers
 
 def print_threads():
     print()

@@ -30,3 +30,12 @@ def gcd_list(a):
     for i in a[1:]:
         res = gcd(res, int(i))
     return res
+
+class Pusher:
+    def __init__(self,servers=[]):
+        self.servers = servers
+
+    def push(self,sentence, sid=0):
+        socketio.emit('feed', {'data': sentence}, namespace='/'+re.sub("\D","_",sid))
+        
+

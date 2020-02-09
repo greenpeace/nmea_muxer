@@ -7,7 +7,7 @@ import re, socket, random
 class Server:
 
 
-    def __init__(self,bind_address,iface="",name="",throttle=False,listeners=[],verbose=False):
+    def __init__(self,bind_address,iface="",name="",throttle=False,listeners=[],pusher=None,verbose=False):
 
         self.bind_address = bind_address
         self.name = name
@@ -18,6 +18,7 @@ class Server:
         self.throttle = throttle
         self.verbose = verbose
         self.listeners = listeners
+        self.pusher = pusher
 
         self.thread = None
         self.alive = True
@@ -177,8 +178,8 @@ class Server:
             current = dt.now()
             offset = (current - current.replace(microsecond=0)).total_seconds()
             solong = period - offset % period
-            #if offset + solong > 1:
-            #    solong += 1 % period
+            if offset + solong > 1:
+                solong += 1 % period
             #ls = []
             for send in list(self.throttle_steps.values())[self.throttle_step]:
                 for l in self.listeners:
