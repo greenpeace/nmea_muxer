@@ -88,10 +88,11 @@
         </div>
         {% for l in g.listeners %}
           <div class="col s12 m6 l4 xl3">
+            {% set cardclass = "on" if l.go_on else "off"%}
             {% set cardcolor = "white" if l.go_on else "blue-grey lighten-4"%}
             {% set playcolor = "teal-text" if l.alive else "red-text text-darken-4"%}
-            <div class="card {{ cardcolor }}" id="{{l.id}}">
-              <div class="card-content" style="padding-top:12px">
+            <div class="card listener {{ cardcolor }} {{cardclass}}" id="{{l.id}}">
+              <div class="card-content" style="border-top-color:{{l.color}};">
                 <div class="clearfix">
                   {% if not l.alive %}
                     <span class="red-text text-darken-4 left">{{ l.status }}</span>
@@ -146,8 +147,8 @@
   
   <script>
     $(document).ready(function(){ 
-			socket = io("/test");
-			socket.emit('my_ping');
+			//socket = io("/test");
+			//socket.emit('my_ping');
       $('#clients').modal();
       $('#talkers').modal({startingTop:"-20%",endingTop:"4%"});
       $('#listener').modal();
@@ -246,6 +247,12 @@
       })
     }
   </script>
+
+  {% if g.popserver %}
+    <script>
+      edit_talkers();
+    </script>
+  {% endif %}
 
 
 {% endblock %}

@@ -2,12 +2,12 @@ from threading import Thread
 from time      import sleep
 from datetime  import datetime as dt
 from .utils    import *
-import re, socket
+import re, socket, random
 
 class Server:
 
 
-    def __init__(self,bind_address,iface="",name="",throttle=False,verbose=False):
+    def __init__(self,bind_address,iface="",name="",throttle=False,listeners=[],verbose=False):
         self.bind_address = bind_address
         self.name = name
         self.iface = iface
@@ -16,11 +16,13 @@ class Server:
         self.port = bind_address[1]
         self.throttle = throttle
         self.verbose = verbose
+        self.listeners = listeners
 
         self.thread = None
         self.alive = True
         self.go_on = True
         self.clients=[]
+        self.throttle_timing={}
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.uptime = 0
@@ -38,7 +40,7 @@ class Server:
             self.socket.listen()
             print('    Starting server on {} port {}'.format(*self.bind_address))
             if not self.thread:
-                self.thread = Thread(target=self.process)
+                self.thread = Thread(target=self.process,name="S "+self.name+" "+str(round(random.random()*1000)))
                 self.thread.start()
         except Exception as err:
             if self.tries >= 0:
@@ -93,6 +95,14 @@ class Server:
                         print()
                         print("    EXCEPTION for Server:",err)
                         print()
+
+    def update_throttle(self):
+        for l in self.listeners:
+            if l.throttle == 0:
+                next
+            elif self.id in l.servers:
+                print(l.name, l.throttle)
+        self.throttle_timing = {}
 
     def process(self):
 

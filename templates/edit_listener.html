@@ -10,7 +10,6 @@
               <div class="right pad-10"></div>
               <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
               <a onclick="kill('{{ g.l.id }}')" class="btn-pad right btn-floating waves-effect waves-light red darken-4"><i class="material-icons" style="font-size: 28px">delete</i></a>
-            </div>
             <div class="card-content">
               <table class="table highlight pad responsive-table">
                 <thead>
@@ -22,6 +21,7 @@
                       <th>{{ s.name }}</th>
                     {% endfor %}
                     <th>Throttle</th>
+                    <th>Color</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -61,9 +61,26 @@
                         <input name="throttle" value="{{g.l.throttle}}" type="number"/>
                       </div>
                     </td>
+                    <td>
+                      <div class="input-field">
+                        <select name="color">
+                          {% for color in g.colors %} 
+                            {% if g.l.color == g.colors[color] %}
+                              <option value="{{ g.colors[color] }}" selected> {{ color }} </option>
+                            {% else %}
+                              <option value="{{ g.colors[color] }}"> {{ color }} </option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </td>
                   </tr>
                 </tbody>
               </table>
+              <br/>
+              <br/>
+              <br/>
+              <br/>
 
             </div>
           </div>
@@ -72,6 +89,12 @@
     </div>
 
   <script>
+    colors = {{ g.colors | safe }};
+    $('select').formSelect({classes:"colorselect"});
+    $.each($(".colorselect ul li"),function(i,e){
+      ctext = $(e).text().trim()
+      $(e).prepend("<span class='rect' style='background-color:"+colors[ctext]+";'>&nbsp;</span>")
+    })
     function kill(id) {
       $.post("/kill_listener",{id:id},function(data){
         console.log(data)

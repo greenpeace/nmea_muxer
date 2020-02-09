@@ -109,3 +109,29 @@ span.badge.inline {
   background-color: rgba(239, 154, 154, 0.4);
 }
 
+.card.listener .card-content {
+  padding-top: 4px;
+  border-top-width: 8px;
+  border-top-style: solid;
+  border-top-color: #FFFFFF;
+}
+
+.card.listener.off .card-content {
+  border-top-color: transparent !important;
+}
+
+.card.listener .card-content .clearfix {
+  margin-bottom: -8px;
+}
+
+#listener .colorselect ul {
+  max-height:210px;
+}
+
+#listener .colorselect li .rect {
+  width: 28px;
+  height: 28px;
+  float: left;
+  margin: 12px 14px 0 0;
+}
+

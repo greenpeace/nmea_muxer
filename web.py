@@ -1,6 +1,6 @@
 from flask          import Flask, render_template, session, request, \
                            g, redirect
-from flask_socketio import SocketIO, emit, disconnect
+from flask_socketio import SocketIO, emit
 
 from time           import sleep
 from datetime       import datetime as dt
@@ -24,10 +24,19 @@ listeners = []
 
 settings = Settings()
 
+colors = {"Red":"#f44336", "Pink":"#e91e63", "Purple":"#9c27b0", "Deep purple":"#673ab7", "Indigo":"#3f51b5", "Blue":"#2196f3", "Light blue":"#03a9f4", "Cyan":"#00bcd4", "Teal":"#009688", "Green":"#4caf50", "Light green":"#8bc34a", "Lime":"#cddc39", "Yellow":"#ffeb3b", "Amber":"#ffc107", "Orange":"#ff9800", "Deep orange":"#ff5722", "Brown":"#795548", "Blue grey":"#607d8b", "Grey":"#9e9e9e", "White":"#ffffff"}
+
 @app.before_request
 def before_request():
+    #print_threads()
+
+    g.popserver = False
     if servers == []:
         init()
+        sleep(0.1)
+        if servers == []:
+            g.popserver = True
+
     if request.headers.getlist("X-Forwarded-For"):
         g.ip = request.headers.getlist("X-Forwarded-For")[0]
     else:
@@ -44,13 +53,9 @@ def before_request():
 
 @app.route("/")
 def index():
-    if servers == []:
-        init()
-        return redirect("setup", code=303)
-    else:
-        g.servers = servers
-        g.listeners = listeners
-        return render_template("index.html")
+    g.servers = servers
+    g.listeners = listeners
+    return render_template("index.html")
 
 @app.route("/clients/<sid>")
 def clients(sid):
@@ -210,24 +215,26 @@ def edit_listener(id):
         print(request.form)
         try:
             listener.name = request.form['name']
-            listener.throttle = float(request.form['throttle'])
             listener.servers = []
             for k in request.form:
                 if re.match(r"^server_",k):
                     for s in servers:
                         if s.id == re.sub(r"^server_","",k):
                             listener.servers.append(s)
+            listener.throttle = float(request.form['throttle'])
+            listener.color = request.form['color']
             listener.update()
             update()
             return redirect("/",code=303)
         except Exception as err:
-            g.error = '<script>M.toast({html:"'+str(err)+'",classes:"red darken-4"})</script>'
+            return redirect("/?err="+str(err))
 
 
 
     if listener:
         g.l = listener
         g.servers = servers
+        g.colors = colors
         return render_template("edit_listener.html")
     else:
         return ""
@@ -346,10 +353,6 @@ def register():
     return client_message
 
 
-@socketio.on('my_ping', namespace='/test')
-def ping_pong():
-    print("PING! PONG!")
-
 def init():
     if os.path.isfile("lib/settings/current.json"):
         settings.load()
@@ -362,20 +365,29 @@ def init():
             for s in servers:
                 if s.id in l['server_ids']:
                     ss.append(s)
-            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'])
+            color = '#ffffff' if not 'color' in l.keys() else l['color']
+            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color)
             listeners.append(listener)
             listener.start()
         update()
 
 def update():
     settings.save(servers,listeners)
+    for s in servers:
+        s.listeners = listeners
 
+def print_threads():
+    print()
+    for t in threading.enumerate():
+        print(t.name)
+    if servers == []:
+        init()
+    print()
 
 
 
 if __name__ == '__main__':
     app.run(debug=True, threaded=True)
-    #socketio.run(app, debug=True)
 
 
 

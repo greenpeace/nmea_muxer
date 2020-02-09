@@ -4,7 +4,7 @@ from .utils import *
 import os, re, asyncio, random, string
 
 class Listener:
-    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0):
+    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF"):
         self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
         self.name = name
@@ -12,6 +12,7 @@ class Listener:
         self.server_ids = list(map(lambda s: s.id, servers))
         self.msg_setup = msg_setup
         self.throttle = throttle
+        self.color = color
 
         self.status = "INIT"
         self.msg_count = {}
@@ -24,18 +25,18 @@ class Listener:
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color"]
 
     def start(self):
         self.go_on = True
         self.alive = True
         self.started_at = dt.now()
         if not self.thread:
-            self.thread = Thread(target=self.async_start)
+            self.thread = Thread(target=self.async_start,name="L "+self.name+" "+str(round(random.random()*1000)))
             self.thread.start()
         elif not self.status == "PAUSED":
             self.thread.join()
-            self.thread = Thread(target=self.async_start)
+            self.thread = Thread(target=self.async_start,name="L "+self.name+" "+str(round(random.random()*1000)))
             self.thread.start()
         self.status = "INIT"
 
