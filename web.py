@@ -90,7 +90,6 @@ def setup():
         try:
             for iface in deformalize(request.form):
                 hold = False
-                print(iface)
                 iid = iface['ip']+":"+str(iface['port'])
                 for server in servers:
                     if iid == server.id:
@@ -113,8 +112,10 @@ def setup():
 
                         if 'throttle' in iface.keys():
                             server.throttle = True
+                            server.run_throttle()
                         else:
                             server.throttle = False
+                            server.throttling = False
 
                         if 'delete' in iface.keys():
                             for l in listeners:
@@ -223,10 +224,15 @@ def edit_listener(id):
                     for s in servers:
                         if s.id == re.sub(r"^server_","",k):
                             listener.servers.append(s)
-            listener.throttle = float(request.form['throttle'])
+            oldthrottle = listener.throttle
+            listener.throttle = int(request.form['throttle'])
             listener.color = request.form['color']
             listener.update()
             update()
+            if oldthrottle != listener.throttle:
+                for s in listener.servers:
+                    if s.throttling:
+                        s.rerun_throttle()
             return redirect("/",code=303)
         except Exception as err:
             return redirect("/?err="+str(err))
@@ -372,6 +378,9 @@ def init():
             listeners.append(listener)
             listener.start()
         update()
+        for s in servers:
+            if server.throttle:
+                server.run_throttle();
 
 def update():
     settings.save(servers,listeners)

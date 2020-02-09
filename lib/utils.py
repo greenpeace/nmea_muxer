@@ -1,3 +1,4 @@
+from math import gcd
 
 def deformalize(form):
     result = {}
@@ -18,3 +19,14 @@ def time_ago(seconds):
     result = " ".join(magnitudes_str) if s >= 1 else "N/A"
     return result
 
+def lcm_list(a):
+    lcm = int(a[0])
+    for i in a[1:]:
+        lcm = int(lcm*int(i)/gcd(lcm, int(i)))
+    return lcm
+
+def gcd_list(a):
+    res = int(a[0])
+    for i in a[1:]:
+        res = gcd(res, int(i))
+    return res

@@ -8,6 +8,7 @@ class Server:
 
 
     def __init__(self,bind_address,iface="",name="",throttle=False,listeners=[],verbose=False):
+
         self.bind_address = bind_address
         self.name = name
         self.iface = iface
@@ -21,14 +22,23 @@ class Server:
         self.thread = None
         self.alive = True
         self.go_on = True
+
+        self.throttle_thread = None
+        self.throttle_steps={}
+        self.throttling = False
+        self.throttle_step = 0
+        self.tt = 0
+
         self.clients=[]
-        self.throttle_timing={}
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["bind_address","name","iface","throttle"]
         self.tries = 3
+
+        self.for_export = ["bind_address","name","iface","throttle"]
+
         self.status = "INIT"
 
     def start(self):
@@ -96,13 +106,106 @@ class Server:
                         print("    EXCEPTION for Server:",err)
                         print()
 
+
     def update_throttle(self):
-        for l in self.listeners:
-            if l.throttle == 0:
-                next
-            elif self.id in l.servers:
-                print(l.name, l.throttle)
-        self.throttle_timing = {}
+        if self.throttle:
+            tl = {}
+            for l in self.listeners:
+                if l.throttle <= 0:
+                    next
+                elif self.id in l.server_ids:
+                    tl[l.id] = l.throttle
+
+            if len(tl) == 0:
+                self.throttle_steps = {}
+                return
+
+            self.tt = lcm_list(list(tl.values()))
+            sp = gcd_list(list(tl.values()))
+            ts = {}
+            for i in range(int(self.tt/sp)):
+                step = i * sp
+                for l in tl:
+                    if step == 0:
+                        ts[0] = list(tl.keys())
+                    else:
+                        if step % tl[l] == 0:
+                            if step in ts.keys():
+                                ts[step].append(l)
+                            else:
+                                ts[step] = [l]
+                #if step in ts.keys():
+                #    print(step, ts[step])
+            self.throttle_steps = ts
+
+
+    def run_throttle(self):
+        self.update_throttle()
+        print("thrun")
+        if len(self.throttle_steps) == 0:
+            self.throttling = False
+            return False
+        if self.throttling:
+            return False
+        else:
+            print("thrunin")
+            if not self.throttle_thread:
+                self.throttle_thread = Thread(target=self.process_throttle,name="T "+self.name+" "+str(round(random.random()*1000)))
+                self.throttle_thread.start()
+            else:
+                self.throttling = True
+                self.throttle_thread.join()
+                self.throttle_thread = Thread(target=self.process_throttle,name="T "+self.name+" "+str(round(random.random()*1000)))
+                self.throttle_thread.start()
+
+    def rerun_throttle(self):
+        self.update_throttle()
+        self.throttle_step = 0
+        if len(self.throttle_steps) == 0:
+            self.throttling = False
+            return False
+
+    def process_throttle(self):
+        self.throttling = True
+        self.throttle_step = 0
+        while self.throttling:
+            nextstart = list(self.throttle_steps.keys())[(self.throttle_step+1)%len(self.throttle_steps)]
+            if nextstart == 0:
+                nextstart = self.tt
+            start = list(self.throttle_steps.keys())[self.throttle_step]
+            period = nextstart - start
+            current = dt.now()
+            offset = (current - current.replace(microsecond=0)).total_seconds()
+            solong = period - offset % period
+            #if offset + solong > 1:
+            #    solong += 1 % period
+            #ls = []
+            for send in list(self.throttle_steps.values())[self.throttle_step]:
+                for l in self.listeners:
+                    if send == l.id and l.go_on:
+                        #ls.append(l.name)
+                        for verb in l.msg_order:
+                            #print("tt: ",start, l.name,  verb, verb in l.msg_queue.keys())
+                            if verb in l.msg_queue.keys():
+                                sentence = l.msg_queue[verb]
+                                for client in self.clients:
+                                    try:
+                                        client.sendall(sentence)
+                                    except Exception as err:
+                                        if err.errno == 32:
+                                            print("    Client disconnected:",err.strerror)
+                                            client.close()
+                                            if client in self.clients:
+                                                self.clients.remove(client)
+                                        else:
+                                            print()
+                                            print("    EXCEPTION for Server:",err)
+                                            print()
+                                    sleep(0.01)
+                                del l.msg_queue[verb]
+            #print(start, period, ls)
+            sleep(solong)
+            self.throttle_step = 0 if self.throttle_step >= len(self.throttle_steps) - 1 else self.throttle_step + 1
 
     def process(self):
 
