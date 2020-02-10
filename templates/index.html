@@ -98,7 +98,8 @@
             {% set cardcolor = "white" if l.go_on else "blue-grey lighten-4"%}
             {% set playcolor = "teal-text" if l.alive else "red-text text-darken-4"%}
             <div class="card listener {{ cardcolor }} {{cardclass}}" id="{{l.id}}">
-              <div class="card-content" style="border-top-color:{{l.color}};">
+              <div class="belt" style="background-color:{{l.color}};">&nbsp;</div>
+              <div class="card-content">
                 <div class="clearfix">
                   {% if not l.alive %}
                     <span class="red-text text-darken-4 left">{{ l.status }}</span>
