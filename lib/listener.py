@@ -125,7 +125,7 @@ class Listener:
                     print(self.name, err)
                     self.go_on = False
                     self.alive = False
-                    break
+                    #break
 
     def get_uptime(self):
         if self.go_on:
