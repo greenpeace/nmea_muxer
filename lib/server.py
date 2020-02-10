@@ -189,7 +189,7 @@ class Server:
                     if send == l.id and l.go_on:
                         #ls.append(l.name)
                         for verb in l.msg_order:
-                            #print("tt: ",start, l.name,  verb, verb in l.msg_queue.keys())
+                            print("tt: ",start, l.name,  verb, verb in l.msg_queue.keys())
                             if verb in l.msg_queue.keys():
                                 sentence = l.msg_queue[verb]
                                 del l.msg_queue[verb]
