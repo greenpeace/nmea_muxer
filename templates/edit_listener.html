@@ -21,6 +21,7 @@
                       <th>{{ s.name }}</th>
                     {% endfor %}
                     <th>Throttle</th>
+                    <th>Accumulate</th>
                     <th>Color</th>
                   </tr>
                 </thead>
@@ -61,6 +62,18 @@
                         <input name="throttle" step=1 value="{{g.l.throttle}}" type="number"/>
                       </div>
                     </td>
+                      <td>
+                        <div class="switch">
+                          <label>
+                            {% if g.l.accumulate_sentences %}
+                              <input type="checkbox" checked=true name="accumulate">
+                            {% else %}
+                              <input type="checkbox" name="accumulate">
+                            {% endif %}
+                            <span class="lever"></span>
+                          </label>
+                        </div>
+                      </td>
                     <td>
                       <div class="input-field">
                         <select name="color">

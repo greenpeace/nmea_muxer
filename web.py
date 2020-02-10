@@ -227,6 +227,10 @@ def edit_listener(id):
                             listener.servers.append(s)
             oldthrottle = listener.throttle
             listener.throttle = int(request.form['throttle'])
+            if 'accumulate' in request.form.keys():
+                listener.accumulate_sentences = True
+            else:
+                listener.accumulate_sentences = False
             listener.color = request.form['color']
             listener.update()
             update()

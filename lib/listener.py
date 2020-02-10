@@ -4,7 +4,7 @@ from .utils import *
 import os, re, asyncio, random, string
 
 class Listener:
-    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF"):
+    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False):
         self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
         self.name = name
@@ -13,11 +13,12 @@ class Listener:
         self.msg_setup = msg_setup
         self.throttle = throttle
         self.color = color
+        self.accumulate_sentences = accumulate_sentences
 
         self.status = "INIT"
         self.msg_count = {}
-        self.msg_queue = {}
         self.msg_order = []
+        self.msg_queue = {}
         self.loop = asyncio.new_event_loop()
         self.thread = None
         self.reader = None
@@ -107,7 +108,13 @@ class Listener:
                             self.msg_count[verb] = 1
 
                         if self.throttle > 0:
-                            self.msg_queue[verb] = payload
+                            if self.accumulate_sentences:
+                                if not verb in self.msg_queue.keys():
+                                    self.msg_queue[verb] = []
+                                self.msg_queue[verb].append(payload)
+                            else:
+                                self.msg_queue[verb] = payload
+
 
                         for server in self.servers:
                             server.emit(payload,self.color)

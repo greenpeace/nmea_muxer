@@ -90,10 +90,10 @@ class Server:
             self.alive = True
             self.uptime += (dt.now() - self.started_at).total_seconds()
 
-    def emit(self,sentence,color):
+    def emit(self,sentence,color,force=False):
         if self.verbose:
             print(sentence) 
-        if self.alive and not self.throttle:
+        if self.alive and (force or not self.throttle):
             for client in self.clients:
                 try:
                     client.sendall(sentence)
@@ -189,26 +189,16 @@ class Server:
                     if send == l.id and l.go_on:
                         #ls.append(l.name)
                         for verb in l.msg_order:
-                            print("tt: ",start, l.name,  verb, verb in l.msg_queue.keys())
+                            #print("tt: ",start, l.name,  verb, verb in l.msg_queue.keys())
                             if verb in l.msg_queue.keys():
-                                sentence = l.msg_queue[verb]
-                                del l.msg_queue[verb]
-                                for client in self.clients:
-                                    try:
-                                        client.sendall(sentence)
-                                    except Exception as err:
-                                        if err.errno == 32:
-                                            print("    Client disconnected:",err.strerror)
-                                            client.close()
-                                            if client in self.clients:
-                                                self.clients.remove(client)
-                                        else:
-                                            print()
-                                            print("    EXCEPTION for Server:",err)
-                                            print()
-                                    sleep(0.01)
-                                if self.pusher and self.push:
-                                    self.pusher.push(sentence.decode().strip(),self.id,l.color)
+                                if l.accumulate_sentences:
+                                    for sentence in l.msg_queue[verb]:
+                                        self.emit(sentence,l.color,True)
+                                    del l.msg_queue[verb]
+                                else:
+                                    sentence = l.msg_queue[verb]
+                                    del l.msg_queue[verb]
+                                    self.emit(sentence,l.color,True)
             #print(start, period, ls)
             sleep(solong)
             self.throttle_step = 0 if self.throttle_step >= len(self.throttle_steps) - 1 else self.throttle_step + 1
