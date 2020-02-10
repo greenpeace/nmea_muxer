@@ -26,7 +26,7 @@ class Listener:
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences"]
 
     def start(self):
         self.go_on = True

@@ -398,7 +398,8 @@ def init():
                 if s.id in l['server_ids']:
                     ss.append(s)
             color = '#ffffff' if not 'color' in l.keys() else l['color']
-            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color)
+            accumulate = False if not 'accumulate_sentences' in l.keys() else l['accumulate_sentences']
+            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate)
             listeners.append(listener)
             listener.start()
         update()

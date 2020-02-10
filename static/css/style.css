@@ -152,8 +152,8 @@ span.badge.inline {
 }
 
 #feed .feed {
-  height: calc( 92vh - 102px ) !important;
-  max-height: calc( 92vh - 102px ) !important;
+  height: calc( 100vh - 116px ) !important;
+  max-height: calc( 100vh - 116px ) !important;
   margin: 0 -35px -45px 0;
   padding-bottom: 24px;
   overflow: hidden auto;
