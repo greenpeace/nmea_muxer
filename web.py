@@ -70,7 +70,11 @@ def clients(sid):
         if len(g.s.clients) > 0:
             g.clients = []
             for c in server.clients:
-                g.clients.append(["",c.getpeername()[0],c.getpeername()[1]])
+                try:
+                    g.clients.append(["",c.getpeername()[0],c.getpeername()[1]])
+                except:
+                    server.clients.remove(c)
+                    print("client not found")
                 #try:
                 #    g.clients.append([socket.gethostbyaddr(c.getpeername()[0])[0],c.getpeername()[0],c.getpeername()[1]])
                 #except:
