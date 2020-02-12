@@ -17,11 +17,6 @@
                     <th>Name</th>
                     <th>IP</th>
                     <th>Port</th>
-                    {% for s in g.servers %}
-                      <th>{{ s.name }}</th>
-                    {% endfor %}
-                    <th>Throttle</th>
-                    <th>Accumulate</th>
                     <th>Color</th>
                   </tr>
                 </thead>
@@ -43,6 +38,38 @@
                         <p class="large-text grey-text text-darken-2">{{g.l.listen_address[1]}}</p>
                       </div>
                     </td>
+                    <td>
+                      <div class="input-field">
+                        <select name="color">
+                          {% for color in g.colors %} 
+                            {% if g.l.color == g.colors[color] %}
+                              <option value="{{ g.colors[color] }}" selected> {{ color }} </option>
+                            {% else %}
+                              <option value="{{ g.colors[color] }}"> {{ color }} </option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <br/>
+
+              <table class="table highlight pad responsive-table">
+                <thead>
+                  <tr>
+                    {% for s in g.servers %}
+                      <th>{{ s.name }}</th>
+                    {% endfor %}
+                    <th>Throttle</th>
+                    <th>Accumulate</th>
+                    <th>Resilient</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
                     {% for s in g.servers %}
                       <td>
                         <div class="switch">
@@ -62,39 +89,37 @@
                         <input name="throttle" step=1 value="{{g.l.throttle}}" type="number"/>
                       </div>
                     </td>
-                      <td>
-                        <div class="switch">
-                          <label>
-                            {% if g.l.accumulate_sentences %}
-                              <input type="checkbox" checked=true name="accumulate">
-                            {% else %}
-                              <input type="checkbox" name="accumulate">
-                            {% endif %}
-                            <span class="lever"></span>
-                          </label>
-                        </div>
-                      </td>
                     <td>
-                      <div class="input-field">
-                        <select name="color">
-                          {% for color in g.colors %} 
-                            {% if g.l.color == g.colors[color] %}
-                              <option value="{{ g.colors[color] }}" selected> {{ color }} </option>
-                            {% else %}
-                              <option value="{{ g.colors[color] }}"> {{ color }} </option>
-                            {% endif %}
-                          {% endfor %}
-                        </select>
+                      <div class="switch">
+                        <label>
+                          {% if g.l.accumulate_sentences %}
+                            <input type="checkbox" checked=true name="accumulate">
+                          {% else %}
+                            <input type="checkbox" name="accumulate">
+                          {% endif %}
+                          <span class="lever"></span>
+                        </label>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div class="switch">
+                        <label>
+                          {% if g.l.resilient %}
+                            <input type="checkbox" checked=true name="resilient">
+                          {% else %}
+                            <input type="checkbox" name="resilient">
+                          {% endif %}
+                          <span class="lever"></span>
+                        </label>
                       </div>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              <br/>
-              <br/>
-              <br/>
-              <br/>
 
+              <br/>
+              <br/>
             </div>
           </div>
         </form>

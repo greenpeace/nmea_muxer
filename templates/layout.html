@@ -13,6 +13,7 @@
   </head>
 
   <body class="blue-grey lighten-4">
+    <div id="threads" class="modal"> </div>
     <header>
       <nav class="black" role="navigation">
         <div class="nav-wrapper container">
@@ -25,10 +26,26 @@
           </a>
           <ul class="right hide-on-med-and-down">
             <li class="pad" style="padding-top:0;"> 
-              <span class="badge navitem blue-grey white-text">C{{ g.clientCount }}</span>
-              <span class="badge navitem blue-grey white-text">L{{ g.listenerCount }}</span>
-              <span class="badge navitem blue-grey white-text">S{{ g.serverCount }}</span>
-              <span class="badge navitem blue-grey white-text">T{{ g.threadCount }}</span>
+
+              {% if g.clientCount == 0 %}
+                <span title="Clients: {{ g.clientCount }}" class="badge navitem red darken-4 white-text">C{{ g.clientCount }}</span>
+              {% else %}
+                <span title="Clients: {{ g.clientCount }}" class="badge navitem blue-grey white-text">C{{ g.clientCount }}</span>
+              {% endif %}
+
+              {% if g.listenerCount == 0 %}
+                <span title="Listeners: {{ g.listenerCount }}" class="badge navitem red darken-4 white-text">L{{ g.listenerCount }}</span>
+              {% else %}
+                <span title="Listeners: {{ g.listenerCount }}" class="badge navitem blue-grey white-text">L{{ g.listenerCount }}</span>
+              {% endif %}
+
+              {% if g.serverCount == 0 %}
+                <span title="Talkers: {{ g.serverCount }}" class="badge navitem red darken-4 white-text">S{{ g.serverCount }}</span>
+              {% else %}
+                <span title="Talkers: {{ g.serverCount }}" class="badge navitem blue-grey white-text">S{{ g.serverCount }}</span>
+              {% endif %}
+
+              <span title="Threads: {{ g.threadCount }}" onclick="threads()" class="badge navitem teal white-text" style="cursor: pointer;">T{{ g.threadCount }}</span>
             </li>
           </ul>
 
@@ -74,6 +91,7 @@
 
       <script>
         $(document).ready(function(){ 
+          $('#threads').modal();
           window.setTimeout(logoGreen,100);
         });
         function logoGreen (){ 
@@ -83,6 +101,18 @@
         function logoWhite (){ 
           $(".brand-logo i").css("color","#FFFFFF");
         }
+
+
+        function threads() {
+          $.get("/threads",function(data){
+            if (data.length > 0) {
+              $('#threads').html(data);
+              $('#threads').modal('open');
+            }
+          });
+        }
+
+
       </script>
   </body>
 </html>

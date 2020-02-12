@@ -1,0 +1,21 @@
+
+<div class="modal-content">
+  <div class="row">
+    <div class="col s12">
+      <div class="clearfix">
+        <h5 class="card-title left nopad">Threads</h5>
+        <a class="modal-close btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+      </div>
+      <ul>
+        {% for t in g.threads %}
+          <li>
+            <b><small>{{ loop.index }}</small></b> <span>{{ t.name }}</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+
+{{ g.error | safe }}
+

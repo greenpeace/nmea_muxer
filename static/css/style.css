@@ -136,7 +136,7 @@ span.badge.inline {
 }
 
 #listener .colorselect ul {
-  max-height:210px;
+  max-height:320px;
 }
 
 #listener .colorselect li .rect {
@@ -152,9 +152,9 @@ span.badge.inline {
 }
 
 #feed .feed {
-  height: calc( 100vh - 116px ) !important;
+  height: calc( 100vh - 155px ) !important;
   max-height: calc( 100vh - 116px ) !important;
-  margin: 0 -35px -45px 0;
+  margin: 16px -35px -45px 0;
   padding-bottom: 24px;
   overflow: hidden auto;
   font-size: 11px;

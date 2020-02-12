@@ -231,10 +231,17 @@ def edit_listener(id):
                             listener.servers.append(s)
             oldthrottle = listener.throttle
             listener.throttle = int(request.form['throttle'])
+
             if 'accumulate' in request.form.keys():
                 listener.accumulate_sentences = True
             else:
                 listener.accumulate_sentences = False
+
+            if 'resilient' in request.form.keys():
+                listener.resilient = True
+            else:
+                listener.resilient = False
+
             listener.color = request.form['color']
             listener.update()
             update()
@@ -363,6 +370,7 @@ def toggle_verb():
 @app.route("/feed/<sid>")
 def feed(sid):
     g.s = None
+    g.listeners = listeners
     for s in servers:
         if sid == s.id:
             print("pushing", s.name)
@@ -380,6 +388,15 @@ def nofeed(sid):
     s.push = False
     return ""
 
+
+
+@app.route("/threads",methods=["GET"])
+def threads():
+    g.threads = threading.enumerate()
+    return render_template("threads.html")
+
+
+
 @app.route("/register")
 def register():
     global listen_address
@@ -390,6 +407,7 @@ def register():
 
 
 def init():
+    threading.enumerate()[1].setName("MainFork")
     if os.path.isfile("lib/settings/current.json"):
         settings.load()
         for s in settings.servers:
@@ -403,7 +421,8 @@ def init():
                     ss.append(s)
             color = '#ffffff' if not 'color' in l.keys() else l['color']
             accumulate = False if not 'accumulate_sentences' in l.keys() else l['accumulate_sentences']
-            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate)
+            resilient = False if not 'resilient' in l.keys() else l['resilient']
+            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate,resilient)
             listeners.append(listener)
             listener.start()
         update()
@@ -416,6 +435,7 @@ def update():
     for s in servers:
         s.listeners = listeners
     pusher.servers = servers
+    pusher.reload()
 
 def print_threads():
     print()

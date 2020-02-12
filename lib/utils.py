@@ -40,4 +40,6 @@ class Pusher:
     def push(self, sentence, sid=0, color="#ffffff"):
         self.socketio.emit('feed', {"sentence": sentence, "color":color}, namespace='/'+re.sub("\D","_",sid))
         
+    def reload(self):
+        self.socketio.emit('reset', {}, namespace="/general")
 

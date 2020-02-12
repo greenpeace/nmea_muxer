@@ -6,6 +6,9 @@
         <h5 class="card-title left nopad">NMEA feed on {{ g.s.name }}</h5>
         <a onclick="closeSocket()" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
       </div>
+      {% for l in g.listeners %}
+        <code style="color:{{l.color}};">{{l.name}} &nbsp; </code> 
+      {% endfor %}
       <div class="feed">
     </div>
   </div>
@@ -15,7 +18,8 @@
   ns = "{{ g.namespace }}";
   socket = io(ns);
   socket.on('feed', function(data) {
-    $('#feed .feed').append('<br/><code style="color:'+data.color+';">'+data.sentence+'</code>');
+    date = new Date();
+$('#feed .feed').append('<br/><code style="color:'+data.color+';">'+date.getHours().toLocaleString('en', {minimumIntegerDigits:2})+":"+date.getMinutes().toLocaleString('en', {minimumIntegerDigits:2})+":"+date.getSeconds().toLocaleString('en', {minimumIntegerDigits:2})+'</code> <code>'+data.sentence+'</code>');
     $("#feed .feed")[0].scrollTop = $("#feed .feed")[0].scrollHeight;
   });
 

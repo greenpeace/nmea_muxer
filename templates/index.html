@@ -2,7 +2,7 @@
 {% block content %}
 
       <div id="talkers" class="modal" style="max-height:92%"> </div>
-      <div id="listener" class="modal" style="width:92%"> </div>
+      <div id="listener" class="modal" style="max-height:92%;width:92%"> </div>
       <div id="reorder" class="modal" style="width:360px"> </div>
       <div id="feed" class="modal" style="min-height:calc( 100vh - 60px );padding-top: 0;"> </div>
       <div id="clients" class="modal">
@@ -50,7 +50,7 @@
                     {% set status = "" if server.status == "UP" else server.status %}
                     <tr>
                       {% if server.alive %}
-                        <td><span style="display: inline-flex; vertical-align: sub;"><i class="material-icons teal-text" style="font-size: 18px">lens</i></span></td>
+                        <td><span style="display: inline-flex; vertical-align: sub;"><i class="material-icons green-text" style="font-size: 18px">lens</i></span></td>
                         <td style="text-align:left;" class="teal-text"><small>{{ status }}</small></td>
                       {% else %}
                         <td><span style="display: inline-flex; vertical-align: sub;"><i class="material-icons blue-grey-text text-lighten-2" style="font-size: 18px">lens</i></span></td>
@@ -153,12 +153,14 @@
   
   <script>
     var socket;
+    //var gsocket = io("/general");
     $(document).ready(function(){ 
-			//socket = io("/test");
-			//socket.emit('my_ping');
+      //gsocket.on('reset', function(data) {
+      //  window.location.reload();
+      //});
       $('#clients').modal();
       $('#talkers').modal({startingTop:"-20%",endingTop:"4%"});
-      $('#listener').modal();
+      $('#listener').modal({startingTop:"-20%",endingTop:"4%"});
       $('#reorder').modal();
       $('#feed').modal({
         startingTop:"-20%",

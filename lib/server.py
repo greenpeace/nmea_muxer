@@ -26,6 +26,7 @@ class Server:
         self.push = False
 
         self.throttle_thread = None
+        self.throttle_thread_counter = 0
         self.throttle_steps={}
         self.throttling = False
         self.throttle_step = 0
@@ -52,7 +53,7 @@ class Server:
             self.socket.listen()
             print('    Starting server on {} port {}'.format(*self.bind_address))
             if not self.thread:
-                self.thread = Thread(target=self.process,name="S "+self.name+" "+str(round(random.random()*1000)))
+                self.thread = Thread(target=self.process,name="Talker: "+self.name)
                 self.thread.start()
         except Exception as err:
             if self.tries >= 0:
@@ -145,22 +146,22 @@ class Server:
 
     def run_throttle(self):
         self.update_throttle()
-        print("thrun")
         if len(self.throttle_steps) == 0:
             self.throttling = False
             return False
         if self.throttling:
             return False
         else:
-            print("thrunin")
             if not self.throttle_thread:
-                self.throttle_thread = Thread(target=self.process_throttle,name="T "+self.name+" "+str(round(random.random()*1000)))
+                self.throttle_thread = Thread(target=self.process_throttle,name="Talker (throttle): "+self.name+" "+str(self.throttle_thread_counter))
                 self.throttle_thread.start()
+                self.throttle_thread_counter += 1
             else:
                 self.throttling = True
                 self.throttle_thread.join()
-                self.throttle_thread = Thread(target=self.process_throttle,name="T "+self.name+" "+str(round(random.random()*1000)))
+                self.throttle_thread = Thread(target=self.process_throttle,name="Talker (throttle): "+self.name+" "+str(self.throttle_thread_counter))
                 self.throttle_thread.start()
+                self.throttle_thread_counter += 1
 
     def rerun_throttle(self):
         self.update_throttle()

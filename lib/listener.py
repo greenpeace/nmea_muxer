@@ -1,10 +1,11 @@
 from threading import Thread
+from time import sleep
 from datetime  import datetime as dt
 from .utils import *
 import os, re, asyncio, random, string
 
 class Listener:
-    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False):
+    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False):
         self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
         self.name = name
@@ -14,6 +15,7 @@ class Listener:
         self.throttle = throttle
         self.color = color
         self.accumulate_sentences = accumulate_sentences
+        self.resilient = resilient
 
         self.status = "INIT"
         self.msg_count = {}
@@ -21,25 +23,47 @@ class Listener:
         self.msg_queue = {}
         self.loop = asyncio.new_event_loop()
         self.thread = None
+        self.thread_counter = 0
+        self.resilience_thread = None
+        self.resilience_alive = True
         self.reader = None
         self.alive = True
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences","resilient"]
 
     def start(self):
         self.go_on = True
         self.alive = True
         self.started_at = dt.now()
+
+
         if not self.thread:
-            self.thread = Thread(target=self.async_start,name="L "+self.name+" "+str(round(random.random()*1000)))
+            self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
             self.thread.start()
+            self.thread_counter += 1
         elif not self.status == "PAUSED":
             self.thread.join()
-            self.thread = Thread(target=self.async_start,name="L "+self.name+" "+str(round(random.random()*1000)))
+            self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
             self.thread.start()
+            self.thread_counter += 1
+
+        if not self.resilience_thread:
+            self.resilience_thread = Thread(target=self.insist,name="Listener (resilience): "+self.name)
+            self.resilience_thread.start()
+
         self.status = "INIT"
+
+    def insist(self):
+        while self.resilience_alive:
+            if self.resilient and not self.alive:
+                self.thread.join()
+                self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
+                self.thread.start()
+                self.thread_counter += 1
+            sleep(1)
+
 
     def pause(self):
         self.status = "PAUSED"
@@ -50,8 +74,10 @@ class Listener:
         self.status = "KILLED"
         self.alive = False
         self.go_on = False
+        self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
         self.thread.join()
+        self.resilience_thread.join()
 
     def update(self):
         self.server_ids = list(map(lambda s: s.id, self.servers))
@@ -125,7 +151,7 @@ class Listener:
                     print(self.name, err)
                     self.go_on = False
                     self.alive = False
-                    #break
+                    break
 
     def get_uptime(self):
         if self.go_on:
