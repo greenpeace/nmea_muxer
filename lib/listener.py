@@ -116,10 +116,8 @@ class Listener:
     async def __async__start(self):
 
         if not self.reader:
-            print(self.name, "no reader")
             try:
                 self.reader, writer = await asyncio.open_connection(*self.listen_address)
-                print(dir(self.reader))
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
                 print(self.name, self.status)
