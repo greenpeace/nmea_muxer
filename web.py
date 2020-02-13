@@ -280,6 +280,20 @@ def kill_listener():
             return ""
     return ""
 
+@app.route("/restart_listener",methods=["POST"])
+def restart_listener():
+    if request.method == 'POST':
+        listener = None
+        for l in listeners:
+            if l.id == request.form['id']:
+                listener = l
+        if listener:
+            listener.restart()
+            update()
+            return "ack"
+        else:
+            return "nack"
+
 @app.route("/pause_listener",methods=["POST"])
 def pause_listener():
     if request.method == 'POST':
@@ -425,6 +439,8 @@ def init():
             listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate,resilient)
             listeners.append(listener)
             listener.start()
+            if not 'go_on' in l.keys() or l['go_on'] == False:
+                listener.pause()
         update()
         for s in servers:
             if server.throttle:

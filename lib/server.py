@@ -21,9 +21,13 @@ class Server:
         self.pusher = pusher
 
         self.thread = None
+        self.thread_counter = 0
         self.alive = True
         self.go_on = True
         self.push = False
+
+        self.resilience_thread = None
+        self.resilience_alive = True
 
         self.throttle_thread = None
         self.throttle_thread_counter = 0
@@ -53,11 +57,11 @@ class Server:
             self.socket.listen()
             print('    Starting server on {} port {}'.format(*self.bind_address))
             if not self.thread:
-                self.thread = Thread(target=self.process,name="Talker: "+self.name)
+                self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
                 self.thread.start()
         except Exception as err:
             if self.tries >= 0:
-                print(err, ", retrying")
+                print(err, self.ip, " retrying")
                 sleep(1)
                 self.start()
             else:
@@ -66,9 +70,25 @@ class Server:
                 print("Tried many times, didn't work")
                 pass
 
+        if not self.resilience_thread:
+            self.resilience_thread = Thread(target=self.insist,name="Talker (resilience): "+self.name)
+            self.resilience_thread.start()
+
+
+    def insist(self):
+        while self.resilience_alive:
+            if not self.alive:
+                if self.thread:
+                    self.thread.join()
+                    self.thread_counter += 1
+                self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
+                self.thread.start()
+            sleep(1)
+
     def kill(self):
         self.status = "CLOSING"
         self.alive = False
+        self.resilience_alive = True
         self.uptime += (dt.now() - self.started_at).total_seconds()
         for client in self.clients:
             client.close()
@@ -76,6 +96,7 @@ class Server:
         if self.socket:
             self.socket.shutdown(socket.SHUT_RDWR)
         self.thread.join()
+        self.resilience_thread.join()
         self.status = "KILLED"
 
 
@@ -235,6 +256,7 @@ class Server:
                 print()
                 print("    EXCEPTION for Server:",err)
                 print()
+                self.alive = False
 
 
 

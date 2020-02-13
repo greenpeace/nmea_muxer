@@ -31,7 +31,7 @@ class Listener:
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences","resilient"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences","resilient","go_on"]
 
     def start(self):
         self.go_on = True
@@ -55,13 +55,33 @@ class Listener:
 
         self.status = "INIT"
 
+    def restart(self):
+        self.started_at = dt.now()
+        self.reader = None
+        print('    Restarting Listener {} on {}:{}'.format(self.name, *self.listen_address))
+        if self.thread:
+            resilient = self.resilient
+            self.alive = False
+            self.go_on = False
+            self.resilient = False
+            self.thread.join()
+            self.thread_counter += 1
+            while self.thread.is_alive():
+                sleep(0.1)
+            self.resilient = resilient
+        self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
+        self.alive = True
+        self.go_on = True
+        self.thread.start()
+
+        if not self.resilience_thread:
+            self.resilience_thread = Thread(target=self.insist,name="Talker (resilience): "+self.name)
+            self.resilience_thread.start()
+
     def insist(self):
         while self.resilience_alive:
             if self.resilient and not self.alive:
-                self.thread.join()
-                self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
-                self.thread.start()
-                self.thread_counter += 1
+                self.restart()
             sleep(1)
 
 
@@ -99,6 +119,7 @@ class Listener:
             print(self.name, "no reader")
             try:
                 self.reader, writer = await asyncio.open_connection(*self.listen_address)
+                print(dir(self.reader))
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
                 print(self.name, self.status)
@@ -110,7 +131,7 @@ class Listener:
                 self.go_on = False
                 self.alive = False
 
-        while self.alive:
+        while self.alive and not self.reader._eof:
             try:
                 payload = await self.reader.readline()
                 sentence = payload.decode().strip()
@@ -148,10 +169,10 @@ class Listener:
             except Exception as err:
                 print(self.name, str(err))
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
-                    print(self.name, err)
-                    self.go_on = False
-                    self.alive = False
                     break
+
+        self.go_on = False
+        self.alive = False
 
     def get_uptime(self):
         if self.go_on:
