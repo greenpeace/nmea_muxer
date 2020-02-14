@@ -58,7 +58,7 @@ class Listener:
     def restart(self):
         self.started_at = dt.now()
         self.reader = None
-        print('    Restarting Listener {} on {}:{}'.format(self.name, *self.listen_address))
+        print(dt.now().strftime("%Y%m%d %H%M%S"),'Restarting Listener {} on {}:{}'.format(self.name, *self.listen_address))
         if self.thread:
             resilient = self.resilient
             self.alive = False
@@ -165,10 +165,13 @@ class Listener:
                             server.emit(payload,self.color)
 
             except Exception as err:
-                print(self.name, str(err))
+                print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Listener: ",self.name, str(err))
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     break
 
+        if self.reader and self.reader._eof:
+            self.status = "BROKEN PIPE"
+            print(self.name, self.status)
         self.go_on = False
         self.alive = False
 

@@ -55,7 +55,7 @@ class Server:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            print('    Starting server on {} port {}'.format(*self.bind_address))
+            print(dt.now().strftime("%Y%m%d %H%M%S"),'Starting server on {} port {}'.format(*self.bind_address))
             if not self.thread:
                 self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
                 self.thread.start()
@@ -63,13 +63,45 @@ class Server:
             if self.tries >= 0:
                 print(err, self.ip, " retrying")
                 sleep(1)
-                self.start()
+                self.restart()
             else:
                 self.alive = False
                 self.go_on = False
                 print("Tried many times, didn't work")
                 pass
 
+    def restart(self):
+        self.started_at = dt.now()
+        self.alive = False
+        self.resilience_alive = False
+        self.uptime += (dt.now() - self.started_at).total_seconds()
+        for client in self.clients:
+            client.close()
+            self.clients.remove(client)
+        if self.socket:
+            try:
+                self.socket.shutdown(socket.SHUT_RDWR)
+            except:
+                pass
+        if self.thread:
+            self.thread.join()
+            while self.thread.is_alive():
+                sleep(0.1)
+        try:
+            self.socket.bind(self.bind_address)
+            self.status = "UP"
+            self.socket.listen()
+            print(dt.now().strftime("%Y%m%d %H%M%S"),'Restarting server on {} port {}'.format(*self.bind_address))
+            self.alive = True
+            self.go_on = True
+            self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
+            self.thread.start()
+        except Exception as err:
+            self.alive = False
+            self.go_on = False
+            pass
+
+        self.resilience_alive = True
         if not self.resilience_thread:
             self.resilience_thread = Thread(target=self.insist,name="Talker (resilience): "+self.name)
             self.resilience_thread.start()
@@ -78,17 +110,13 @@ class Server:
     def insist(self):
         while self.resilience_alive:
             if not self.alive:
-                if self.thread:
-                    self.thread.join()
-                    self.thread_counter += 1
-                self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
-                self.thread.start()
+                self.restart()
             sleep(1)
 
     def kill(self):
         self.status = "CLOSING"
         self.alive = False
-        self.resilience_alive = True
+        self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
         for client in self.clients:
             client.close()
@@ -121,13 +149,13 @@ class Server:
                     client.sendall(sentence)
                 except Exception as err:
                     if err.errno == 32:
-                        print("    Client disconnected:",err.strerror)
+                        print(dt.now().strftime("%Y%m%d %H%M%S"),"Client disconnected:",err.strerror)
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
                     else:
                         print()
-                        print("    EXCEPTION for Server:",err)
+                        print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Client:",err)
                         print()
             if self.pusher and self.push:
                 self.pusher.push(sentence.decode().strip(),self.id,color)
@@ -236,7 +264,7 @@ class Server:
 
             except KeyboardInterrupt:
                 print()
-                print("    KeyboardInterrupt for Server - closing client sockets")
+                print(dt.now().strftime("%Y%m%d %H%M%S"),"KeyboardInterrupt for Server - closing client sockets")
                 self.kill()
                 print()
 
@@ -248,13 +276,13 @@ class Server:
                             self.clients.remove(client)
                 else:
                     print()
-                    print("    Closing Server:",err)
+                    print(dt.now().strftime("%Y%m%d %H%M%S"),"Closing Server:",err)
                     print()
 
 
             except Exception as err:
                 print()
-                print("    EXCEPTION for Server:",err)
+                print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Server:",err)
                 print()
                 self.alive = False
 

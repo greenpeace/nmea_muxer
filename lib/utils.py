@@ -1,5 +1,5 @@
 from math import gcd
-import re
+import re, struct, socket
 
 def deformalize(form):
     result = {}
@@ -19,6 +19,11 @@ def time_ago(seconds):
     magnitudes_str = ("{n}{magnitude}".format(n=int(locals_[magnitude]), magnitude=magnitude) for magnitude in ("d", "h", "m", "s") if locals_[magnitude])
     result = " ".join(magnitudes_str) if s >= 1 else "N/A"
     return result
+
+def getTCPInfo(s):
+    fmt = "B"*7+"I"*21
+    x = struct.unpack(fmt, s.getsockopt(socket.IPPROTO_TCP, socket.TCP_INFO, 92))
+    return x[0]
 
 def lcm_list(a):
     lcm = int(a[0])

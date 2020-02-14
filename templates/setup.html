@@ -79,6 +79,51 @@
                   </tbody>
                 </table>
               {% endif %}
+
+              <div class="clearfix">
+                <h5 class="left" style="margin:16px 0">&nbsp;&nbsp;New endpoint</h5>
+              </div>
+              <table class="table highlight pad">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>IP</th>
+                    <th>Port</th>
+                    <th>Active</th>
+                    <th>&nbsp;</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                      <td>
+                        <div class="input-field">
+                          <input name="id_{{ g.slen + 1 }}" value="custom" type="hidden"/>
+                          <input name="name_{{ g.slen + 1 }}" type="text"/>
+                        </div>
+                      </td>
+                      <td>
+                        <div style="max-width:144px;">
+                          <input name="ip_{{ g.slen + 1 }}" type="text"/>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="input-field" style="max-width:92px;">
+                          <input name="port_{{ g.slen + 1 }}" min="0" max="65535" type="text">
+                        </div>
+                      </td>
+                      <td>
+                        <div class="switch">
+                          <label>
+                            <input type="checkbox" name="active_{{ g.slen + 1 }}">
+                            <span class="lever"></span>
+                          </label>
+                        </div>
+                      </td>
+                      <td style="width:98px">&nbsp;</td>
+                    </tr>
+                </tbody>
+              </table>
+
               <div class="clearfix">
                 <h5 class="left" style="margin:16px 0">&nbsp;&nbsp;Available interfaces</h5>
               </div>
@@ -97,28 +142,28 @@
                     <tr>
                       <td>
                         <div class="input-field">
-                          <input name="id_{{ g.slen + loop.index}}" value="{{iface[0]}}" type="hidden"/>
-                          <input name="name_{{ g.slen + loop.index}}" value="{{iface[1]}}" type="text"/>
+                          <input name="id_{{ g.slen + loop.index + 1 }}" value="{{iface[0]}}" type="hidden"/>
+                          <input name="name_{{ g.slen + loop.index + 1 }}" value="{{iface[1]}}" type="text"/>
                         </div>
                       </td>
                       <td>
                         <div style="margin-top:-12px;" style="max-width:144px;">
-                          <input name="ip_{{ g.slen + loop.index}}" value="{{iface[2]}}" type="hidden"/>
+                          <input name="ip_{{ g.slen + loop.index + 1 }}" value="{{iface[2]}}" type="hidden"/>
                           <p class="large-text grey-text text-darken-2">{{iface[2]}}</p>
                         </div>
                       </td>
                       <td>
                         <div class="input-field" style="max-width:92px;">
-                          <input name="port_{{ g.slen + loop.index}}" value="{{iface[3]}}" min="0" max="65535" type="text">
+                          <input name="port_{{ g.slen + loop.index + 1 }}" value="{{iface[3]}}" min="0" max="65535" type="text">
                         </div>
                       </td>
                       <td>
                         <div class="switch">
                           <label>
                             {% if iface[4] == 1 %}
-                              <input type="checkbox" checked=true name="active_{{ g.slen + loop.index}}">
+                              <input type="checkbox" checked=true name="active_{{ g.slen + loop.index + 1 }}">
                             {% else %}
-                              <input type="checkbox" name="active_{{ g.slen + loop.index}}">
+                              <input type="checkbox" name="active_{{ g.slen + loop.index + 1 }}">
                             {% endif %}
                             <span class="lever"></span>
                           </label>

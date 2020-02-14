@@ -67,6 +67,7 @@ def clients(sid):
 
     if server:
         g.s = server
+        print(getTCPInfo(server.socket))
         if len(g.s.clients) > 0:
             g.clients = []
             for c in server.clients:
@@ -94,6 +95,7 @@ def setup():
     if request.method == 'POST':
         try:
             for iface in deformalize(request.form):
+                print(iface)
                 hold = False
                 iid = iface['ip']+":"+str(iface['port'])
                 for server in servers:
@@ -146,7 +148,8 @@ def setup():
 
             return redirect("/",code=303)
         except Exception as err:
-            g.error = '<script>M.toast({html:"'+str(err)+'",classes:"red darken-4"})</script>'
+            return redirect("/?err="+str(err),code=303)
+            #g.error = '<script>M.toast({html:"'+str(err)+'",classes:"red darken-4"})</script>'
 
 
 
@@ -164,7 +167,7 @@ def setup():
         g.ifaces = []
         g.slen = len(servers)
         for server in servers:
-            if server.iface in netifaces.interfaces():
+            if server.iface in netifaces.interfaces() or True:
                 g.servers.append([server.iface,server.name,server.ip,server.port,(1 if server.alive else 0),(1 if server.throttle else 0)])
         for name in netifaces.interfaces():
             iface = netifaces.ifaddresses(name)
