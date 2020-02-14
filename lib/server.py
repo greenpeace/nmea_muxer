@@ -110,6 +110,7 @@ class Server:
     def insist(self):
         while self.resilience_alive:
             if not self.alive:
+                print(dt.now().strftime("%Y%m%d %H%M%S"),self.name,'insisting')
                 self.restart()
             sleep(1)
 
