@@ -426,6 +426,7 @@ def register():
 
 def init():
     threading.enumerate()[1].setName("MainFork")
+    print(os.path.isfile(os.path.join(app.instance_path, "lib", "settings", "current.json")))
     if os.path.isfile(os.path.join(app.instance_path, "lib", "settings", "current.json")):
         settings.load()
         for s in settings.servers:
