@@ -246,6 +246,7 @@ def edit_listener(id):
                 listener.resilient = False
 
             listener.color = request.form['color']
+            listener.timeout = int(request.form['timeout'])
             listener.update()
             update()
             if oldthrottle != listener.throttle:
@@ -439,7 +440,8 @@ def init():
             color = '#ffffff' if not 'color' in l.keys() else l['color']
             accumulate = False if not 'accumulate_sentences' in l.keys() else l['accumulate_sentences']
             resilient = False if not 'resilient' in l.keys() else l['resilient']
-            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate,resilient)
+            timeout = 10 if not 'timeout' in l.keys() else int(l['timeout'])
+            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate,resilient,timeout)
             listeners.append(listener)
             listener.start()
             if not 'go_on' in l.keys() or l['go_on'] == False:

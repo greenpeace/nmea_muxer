@@ -65,6 +65,7 @@
                       <th>{{ s.name }}</th>
                     {% endfor %}
                     <th>Throttle</th>
+                    <th>Timeout</th>
                     <th>Accumulate</th>
                     <th>Resilient</th>
                   </tr>
@@ -88,6 +89,11 @@
                     <td>
                       <div class="input-field">
                         <input name="throttle" step=1 value="{{g.l.throttle}}" type="number"/>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="input-field">
+                        <input name="timeout" step=1 value="{{g.l.timeout}}" type="number"/>
                       </div>
                     </td>
                     <td>

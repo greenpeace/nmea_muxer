@@ -5,7 +5,7 @@ from .utils import *
 import os, re, asyncio, random, string
 
 class Listener:
-    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False):
+    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False,timeout=10):
         self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
         self.name = name
@@ -16,6 +16,7 @@ class Listener:
         self.color = color
         self.accumulate_sentences = accumulate_sentences
         self.resilient = resilient
+        self.timeout = timeout
 
         self.status = "INIT"
         self.msg_count = {}
@@ -31,7 +32,7 @@ class Listener:
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences","resilient","go_on"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences","resilient","go_on","timeout"]
 
     def start(self):
         self.go_on = True
@@ -75,8 +76,10 @@ class Listener:
         self.thread.start()
 
         if not self.resilience_thread:
-            self.resilience_thread = Thread(target=self.insist,name="Talker (resilience): "+self.name)
+            self.resilience_thread = Thread(target=self.insist,name="Listener (resilience): "+self.name)
             self.resilience_thread.start()
+
+        self.status = "INIT"
 
     def insist(self):
         while self.resilience_alive:
@@ -131,7 +134,7 @@ class Listener:
 
         while self.alive and not self.reader._eof:
             try:
-                payload = await self.reader.readline()
+                payload = await asyncio.wait_for(self.reader.readline(),self.timeout)
                 sentence = payload.decode().strip()
                 if re.match(r"^[\$!]\w{4,5},",sentence) and self.go_on:
                     self.status = "UP"
@@ -172,6 +175,7 @@ class Listener:
         if self.reader and self.reader._eof:
             self.status = "BROKEN PIPE"
             print(self.name, self.status)
+
         self.go_on = False
         self.alive = False
 
