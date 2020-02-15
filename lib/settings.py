@@ -24,7 +24,7 @@ class Settings:
             f.write(json.dumps(self.export(), indent=2, sort_keys=True))
 
     def load(self,filename="current"):
-        with open("./lib/settings/"+filename+".json","r") as f:
+        with open(os.path.join(app.instance_path, "lib", "settings", (filename+".json")),"r") as f:
             try:
                 data = json.load(f)
             except:
