@@ -1,8 +1,9 @@
-import json
+import os, json
 
 class Settings:
 
-    def __init__(self,period=0,servers=[],listeners=[]):
+    def __init__(self,app=None,period=0,servers=[],listeners=[]):
+        self.app = app
         self.period = period
         self.servers = servers
         self.listeners = listeners
@@ -24,7 +25,7 @@ class Settings:
             f.write(json.dumps(self.export(), indent=2, sort_keys=True))
 
     def load(self,filename="current"):
-        with open(os.path.join(app.instance_path, "lib", "settings", (filename+".json")),"r") as f:
+        with open(os.path.join(self.app.root_path, "lib", "settings", (filename+".json")),"r") as f:
             try:
                 data = json.load(f)
             except:

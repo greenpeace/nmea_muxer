@@ -23,7 +23,7 @@ pusher = Pusher(socketio)
 servers = []
 listeners = []
 
-settings = Settings()
+settings = Settings(app)
 
 colors = {"Red":"#f44336", "Pink":"#e91e63", "Purple":"#9c27b0", "Deep purple":"#673ab7", "Indigo":"#3f51b5", "Blue":"#2196f3", "Light blue":"#03a9f4", "Cyan":"#00bcd4", "Teal":"#009688", "Green":"#4caf50", "Light green":"#8bc34a", "Lime":"#cddc39", "Yellow":"#ffeb3b", "Amber":"#ffc107", "Orange":"#ff9800", "Deep orange":"#ff5722", "Brown":"#795548", "Blue grey":"#607d8b", "Grey":"#9e9e9e", "White":"#ffffff"}
 
@@ -427,8 +427,7 @@ def register():
 
 def init():
     threading.enumerate()[1].setName("MainFork")
-    print(os.path.isfile(os.path.join(app.instance_path, "lib", "settings", "current.json")))
-    if os.path.isfile(os.path.join(app.instance_path, "lib", "settings", "current.json")):
+    if os.path.isfile(os.path.join(app.root_path, "lib", "settings", "current.json")):
         settings.load()
         for s in settings.servers:
             server = Server(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher)
