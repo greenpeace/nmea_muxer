@@ -424,6 +424,7 @@ def register():
     return client_message
 
 
+
 def init():
     threading.enumerate()[1].setName("MainFork")
     print(os.path.isfile(os.path.join(app.instance_path, "lib", "settings", "current.json")))
