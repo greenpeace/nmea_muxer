@@ -426,7 +426,7 @@ def register():
 
 def init():
     threading.enumerate()[1].setName("MainFork")
-    if os.path.isfile("lib/settings/current.json"):
+    if os.path.isfile("/var/www/nmea_muxer/lib/settings/current.json"):
         settings.load()
         for s in settings.servers:
             server = Server(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher)
