@@ -424,7 +424,6 @@ def register():
     return client_message
 
 
-
 def init():
     threading.enumerate()[1].setName("MainFork")
     if os.path.isfile("lib/settings/current.json"):
