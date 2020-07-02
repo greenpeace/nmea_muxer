@@ -168,7 +168,8 @@ class Listener:
                             server.emit(payload,self.color)
 
             except Exception as err:
-                print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Listener: ",self.name, str(err))
+                print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Listener %s:"%self.name)
+                print(err)
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     break
 
