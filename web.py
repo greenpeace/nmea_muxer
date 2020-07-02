@@ -7,7 +7,7 @@ from datetime       import datetime as dt
 
 import threading
 import netifaces
-import socket, json, re, os, resource
+import socket, json, re, os, resource, logging
 
 from lib.server     import Server
 from lib.listener   import Listener
@@ -470,6 +470,7 @@ def print_threads():
 
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.DEBUG)
     app.run(debug=True, threaded=True)
 
 
