@@ -1,8 +1,11 @@
-from threading import Thread
-from time import sleep
-from datetime  import datetime as dt
-from .utils import *
+from threading  import Thread
+from time       import sleep
+from datetime   import datetime as dt
+from colorama   import Fore, Back, Style
+
 import os, re, asyncio, random, string
+
+from .utils import *
 
 class Listener:
     def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False,timeout=10):
@@ -65,10 +68,12 @@ class Listener:
             self.alive = False
             self.go_on = False
             self.resilient = False
+            self.loop.close()
             self.thread.join()
             self.thread_counter += 1
-            while self.thread.is_alive():
-                sleep(0.1)
+            while self.thread.is_alive() or self.loop.is_running():
+                sleep(0.5)
+                print("waiting for shutdown")
             self.resilient = resilient
         self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
         self.alive = True
@@ -99,6 +104,7 @@ class Listener:
         self.go_on = False
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
+        self.loop.close()
         self.thread.join()
         self.resilience_thread.join()
 
@@ -168,8 +174,9 @@ class Listener:
                             server.emit(payload,self.color)
 
             except Exception as err:
-                print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Listener %s:"%self.name)
+                print(Fore.YELLOW + dt.now().strftime("%y%m%d %H%M%S"),Fore.RED+"EXCEPTION"+Style.RESET_ALL," for Listener %s:"%self.name)
                 print(err)
+                print(Fore.RED+"EOE")
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     break
 
