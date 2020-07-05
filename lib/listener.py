@@ -1,7 +1,7 @@
 from threading  import Thread
 from time       import sleep
 from datetime   import datetime as dt
-from colorama   import Fore, Back, Style
+#from colorama   import Fore, Back, Style
 
 import os, re, asyncio, random, string
 
@@ -68,7 +68,7 @@ class Listener:
             self.alive = False
             self.go_on = False
             self.resilient = False
-            self.loop.close()
+            self.loop.stop()
             self.thread.join()
             self.thread_counter += 1
             while self.thread.is_alive() or self.loop.is_running():
@@ -104,6 +104,7 @@ class Listener:
         self.go_on = False
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
+        self.loop.stop()
         self.loop.close()
         self.thread.join()
         self.resilience_thread.join()
