@@ -1,7 +1,7 @@
 from threading  import Thread
 from time       import sleep
 from datetime   import datetime as dt
-#from colorama   import Fore, Back, Style
+from colorama   import Fore, Back, Style
 
 import os, re, asyncio, random, string
 
@@ -177,7 +177,7 @@ class Listener:
             except Exception as err:
                 print(Fore.YELLOW + dt.now().strftime("%y%m%d %H%M%S"),Fore.RED+"EXCEPTION"+Style.RESET_ALL," for Listener %s:"%self.name)
                 print(err)
-                print(Fore.RED+"EOE")
+                print(Fore.RED+"EOE"+Style.RESET_ALL)
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     break
 
