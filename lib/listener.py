@@ -74,7 +74,7 @@ class Listener:
                 sleep(0.1)
             self.resilient = resilient
         if self.loop:
-            self.loop.stop()
+            self.loop.close()
             while self.loop.is_running():
                 sleep(0.1)
         self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
