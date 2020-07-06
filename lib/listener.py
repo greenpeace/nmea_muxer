@@ -77,6 +77,7 @@ class Listener:
             self.loop.close()
             while self.loop.is_running():
                 sleep(0.1)
+        self.loop = asyncio.new_event_loop()
         self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
         self.alive = True
         self.go_on = True
