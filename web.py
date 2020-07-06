@@ -472,6 +472,7 @@ def print_threads():
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
     app.run(debug=True, threaded=True)
 
 
