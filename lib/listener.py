@@ -70,11 +70,13 @@ class Listener:
             self.resilient = False
             self.thread.join()
             self.thread_counter += 1
-            while self.thread.is_alive() or self.loop.is_running():
-                sleep(0.5)
-                print("waiting for shutdown")
-            self.loop.stop()
+            while self.thread.is_alive():
+                sleep(0.1)
             self.resilient = resilient
+        if self.loop:
+            self.loop.stop()
+            while self.loop.is_running():
+                sleep(0.1)
         self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
         self.alive = True
         self.go_on = True
