@@ -68,12 +68,12 @@ class Listener:
             self.alive = False
             self.go_on = False
             self.resilient = False
-            self.loop.stop()
             self.thread.join()
             self.thread_counter += 1
             while self.thread.is_alive() or self.loop.is_running():
                 sleep(0.5)
                 print("waiting for shutdown")
+            self.loop.stop()
             self.resilient = resilient
         self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
         self.alive = True
@@ -175,9 +175,7 @@ class Listener:
                             server.emit(payload,self.color)
 
             except Exception as err:
-                print(Fore.YELLOW + dt.now().strftime("%y%m%d %H%M%S"),Fore.RED+"EXCEPTION"+Style.RESET_ALL," for Listener %s:"%self.name)
-                print(err)
-                print(Fore.RED+"EOE"+Style.RESET_ALL)
+                print(Fore.YELLOW + dt.now().strftime("%y%m%d %H%M%S"),Fore.RED+"EXCEPTION"+Fore.YELLOW,"for Listener %s:"%self.name+Style.RESET_ALL, err)
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     break
 
