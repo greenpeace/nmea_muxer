@@ -39,7 +39,8 @@ class Listener:
     def start(self):
         self.go_on = True
         self.alive = True
-        pprint('Starting {} on {}:{}'.format(self.name, *self.listen_address), "LISTENER", "INFO")
+        pprint('Starting {} on {}:{}{}'.format(self.name, self.listen_address[0], Style.BRIGHT, self.listen_address[1]),
+            "LISTENER", "INFO")
         self.started_at = dt.now()
 
 
@@ -62,7 +63,7 @@ class Listener:
     def restart(self):
         self.started_at = dt.now()
         self.reader = None
-        pprint('Restarting {} on {}:{}'.format(self.name, *self.listen_address), "LISTENER", "WARN")
+        pprint('Restarting {} on {}:{}{}'.format(self.name, self.listen_address[0], Style.BRIGHT, self.listen_address[1]), "LISTENER", "WARN")
         if self.thread:
             resilient = self.resilient
             self.alive = False
