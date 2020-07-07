@@ -55,7 +55,7 @@ class Server:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            print(dt.now().strftime("%Y%m%d %H%M%S"),'Starting server on {} port {}'.format(*self.bind_address))
+            pprint('Starting on {} port {}'.format(*self.bind_address), "TALKER", "INFO")
             if not self.thread:
                 self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
                 self.thread.start()

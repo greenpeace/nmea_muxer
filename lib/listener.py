@@ -1,7 +1,6 @@
 from threading  import Thread
 from time       import sleep
 from datetime   import datetime as dt
-from colorama   import Fore, Back, Style
 
 import os, re, asyncio, random, string
 
@@ -40,6 +39,7 @@ class Listener:
     def start(self):
         self.go_on = True
         self.alive = True
+        pprint('Starting {} on {}:{}'.format(self.name, *self.listen_address), "LISTENER", "INFO")
         self.started_at = dt.now()
 
 
@@ -62,7 +62,7 @@ class Listener:
     def restart(self):
         self.started_at = dt.now()
         self.reader = None
-        print(dt.now().strftime("%Y%m%d %H%M%S"),'Restarting Listener {} on {}:{}'.format(self.name, *self.listen_address))
+        pprint('Restarting {} on {}:{}'.format(self.name, *self.listen_address), "LISTENER", "WARN")
         if self.thread:
             resilient = self.resilient
             self.alive = False
@@ -75,7 +75,7 @@ class Listener:
             self.resilient = resilient
         if self.loop:
             self.loop.close()
-            while self.loop.is_running():
+            while not self.loop.is_closed():
                 sleep(0.1)
         self.loop = asyncio.new_event_loop()
         self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
@@ -133,12 +133,12 @@ class Listener:
                 self.reader, writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
-                print(self.name, self.status)
+                pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
                 self.go_on = False
                 self.alive = False
             except OSError:
                 self.status = "SOCK BUSY"
-                print(self.name, self.status)
+                pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
                 self.go_on = False
                 self.alive = False
 
@@ -178,7 +178,7 @@ class Listener:
                             server.emit(payload,self.color)
 
             except Exception as err:
-                print(Fore.YELLOW + dt.now().strftime("%y%m%d %H%M%S"),Fore.RED+"EXCEPTION"+Fore.YELLOW,"for Listener %s:"%self.name+Style.RESET_ALL, err)
+                pprint('{}: {}{}'.format(self.name, Style.RESET_ALL, err), "LISTENER", "ERROR")
                 if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
                     break
 
