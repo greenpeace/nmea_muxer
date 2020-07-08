@@ -25,6 +25,10 @@ servers = []
 listeners = []
 
 settings = Settings(app)
+logging.basicConfig(level=logging.WARN)
+logging.getLogger('werkzeug').setLevel(logging.WARN)
+#print("logging.level:")
+#print(logger.level)
 
 colors = {"Red":"#f44336", "Pink":"#e91e63", "Purple":"#9c27b0", "Deep purple":"#673ab7", "Indigo":"#3f51b5", "Blue":"#2196f3", "Light blue":"#03a9f4", "Cyan":"#00bcd4", "Teal":"#009688", "Green":"#4caf50", "Light green":"#8bc34a", "Lime":"#cddc39", "Yellow":"#ffeb3b", "Amber":"#ffc107", "Orange":"#ff9800", "Deep orange":"#ff5722", "Brown":"#795548", "Blue grey":"#607d8b", "Grey":"#9e9e9e", "White":"#ffffff"}
 
@@ -68,7 +72,6 @@ def clients(sid):
 
     if server:
         g.s = server
-        print(getTCPInfo(server.socket))
         if len(g.s.clients) > 0:
             g.clients = []
             for c in server.clients:
@@ -76,7 +79,6 @@ def clients(sid):
                     g.clients.append(["",c.getpeername()[0],c.getpeername()[1]])
                 except:
                     server.clients.remove(c)
-                    print("client not found")
                 #try:
                 #    g.clients.append([socket.gethostbyaddr(c.getpeername()[0])[0],c.getpeername()[0],c.getpeername()[1]])
                 #except:
@@ -471,8 +473,6 @@ def print_threads():
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.WARN)
-    logging.getLogger('werkzeug').setLevel(logging.WARN)
     app.run(debug=True, threaded=True)
 
 

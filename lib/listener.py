@@ -30,6 +30,7 @@ class Listener:
         self.resilience_thread = None
         self.resilience_alive = True
         self.reader = None
+        self.writer = None
         self.alive = True
         self.go_on = True
         self.uptime = 0
@@ -39,8 +40,7 @@ class Listener:
     def start(self):
         self.go_on = True
         self.alive = True
-        pprint('Starting {} on {}:{}{}'.format(self.name, self.listen_address[0], Style.BRIGHT, self.listen_address[1]),
-            "LISTENER", "INFO")
+        pprint('Starting {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         self.started_at = dt.now()
 
 
@@ -63,7 +63,11 @@ class Listener:
     def restart(self):
         self.started_at = dt.now()
         self.reader = None
-        pprint('Restarting {} on {}:{}{}'.format(self.name, self.listen_address[0], Style.BRIGHT, self.listen_address[1]), "LISTENER", "WARN")
+        pprint('Restarting {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
+        if self.writer:
+            self.writer.close()
+            while not self.writer.wait_closed():
+                sleep(0.1)
         if self.thread:
             resilient = self.resilient
             self.alive = False
@@ -131,7 +135,7 @@ class Listener:
 
         if not self.reader:
             try:
-                self.reader, writer = await asyncio.open_connection(*self.listen_address)
+                self.reader, self.writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
                 pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
@@ -179,13 +183,15 @@ class Listener:
                             server.emit(payload,self.color)
 
             except Exception as err:
-                pprint('{}: {}{}'.format(self.name, Style.RESET_ALL, err), "LISTENER", "ERROR")
-                if not str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
+                if str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
+                    pprint('{}: {}{}'.format(self.name, Style.RESET_ALL, err), "LISTENER", "DEBUG")
+                else:
+                    pprint('{}: {}{}'.format(self.name, Style.RESET_ALL, err), "LISTENER", "ERROR")
                     break
 
         if self.reader and self.reader._eof:
             self.status = "BROKEN PIPE"
-            print(self.name, self.status)
+            pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
 
         self.go_on = False
         self.alive = False

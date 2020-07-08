@@ -55,7 +55,7 @@ class Server:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            pprint('Starting on {} port {}'.format(*self.bind_address), "TALKER", "INFO")
+            pprint('Starting {}:{}{} {}{}'.format(self.bind_address[0].rjust(15," "),Style.BRIGHT,str(self.bind_address[1]).ljust(5," "),Fore.CYAN,self.name), "TALKER", "INFO")
             if not self.thread:
                 self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
                 self.thread.start()
@@ -260,7 +260,7 @@ class Server:
             client = None
             try:
                 client, client_address = self.socket.accept()
-                print("    Incoming client: ",client_address)
+                pprint('Incoming {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), "CLIENT", "INFO")
                 self.clients.append(client)
 
             except KeyboardInterrupt:
