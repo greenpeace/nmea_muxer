@@ -64,10 +64,6 @@ class Listener:
         self.started_at = dt.now()
         self.reader = None
         pprint('Restarting {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
-        if self.writer:
-            self.writer.close()
-            while not self.writer.wait_closed():
-                sleep(0.1)
         if self.thread:
             resilient = self.resilient
             self.alive = False
@@ -135,7 +131,7 @@ class Listener:
 
         if not self.reader:
             try:
-                self.reader, self.writer = await asyncio.open_connection(*self.listen_address)
+                self.reader, writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
                 pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
@@ -195,6 +191,9 @@ class Listener:
 
         self.go_on = False
         self.alive = False
+        if self.writer:
+            self.writer.close()
+            await self.writer.wait_closed()
 
     def get_uptime(self):
         if self.go_on:

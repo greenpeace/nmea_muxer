@@ -40,26 +40,29 @@ def gcd_list(a):
     return res
 
 def pprint(msg,sender="SYSTEM",severity="INFO"):
-    sen_colors = {
-        "CLIENT"    : Fore.GREEN,
-        "TALKER"    : Fore.CYAN,
-        "LISTENER"  : Fore.BLUE,
-        "WEB"       : Fore.YELLOW,
-        "SYSTEM"    : Fore.MAGENTA
-        }
-    sev_colors = {
-        "DEBUG"     : Fore.GREEN,
-        "INFO"      : Fore.WHITE,
-        "WARN"      : Fore.YELLOW+Style.BRIGHT,
-        "ERROR"     : Fore.RED+Style.BRIGHT
-        }
-    sev_times = {
-        "DEBUG"     : Fore.MAGENTA,
-        "INFO"      : Fore.MAGENTA,
-        "WARN"      : Fore.YELLOW,
-        "ERROR"     : Fore.RED
-        }
-    print(sev_times.get(severity) + Style.DIM + dt.now().strftime("%y%m%d%H%M%S")+Style.RESET_ALL,sen_colors.get(sender)+sender.ljust(8," "),sev_colors.get(severity)+msg+Style.RESET_ALL)
+    if severity == "DEBUG":
+        pass
+    else:
+        sen_colors = {
+            "CLIENT"    : Fore.GREEN,
+            "TALKER"    : Fore.CYAN,
+            "LISTENER"  : Fore.BLUE,
+            "WEB"       : Fore.YELLOW,
+            "SYSTEM"    : Fore.MAGENTA
+            }
+        sev_colors = {
+            "DEBUG"     : Fore.GREEN,
+            "INFO"      : Fore.WHITE,
+            "WARN"      : Fore.YELLOW+Style.BRIGHT,
+            "ERROR"     : Fore.RED+Style.BRIGHT
+            }
+        sev_times = {
+            "DEBUG"     : Fore.MAGENTA,
+            "INFO"      : Fore.MAGENTA,
+            "WARN"      : Fore.YELLOW,
+            "ERROR"     : Fore.RED
+            }
+        print(sev_times.get(severity) + Style.DIM + dt.now().strftime("%y%m%d%H%M%S")+Style.RESET_ALL,sen_colors.get(sender)+sender.ljust(8," "),sev_colors.get(severity)+msg+Style.RESET_ALL)
 
 class Pusher:
     def __init__(self,socketio,servers=[]):
