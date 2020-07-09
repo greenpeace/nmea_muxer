@@ -75,6 +75,9 @@ class Listener:
                 sleep(0.1)
             self.resilient = resilient
         if self.loop:
+            self.loop.stop()
+            while self.loop.is_running():
+                sleep(0.1)
             self.loop.close()
             while not self.loop.is_closed():
                 sleep(0.1)
@@ -138,7 +141,7 @@ class Listener:
 
         if not self.reader:
             try:
-                self.reader, writer = await asyncio.open_connection(*self.listen_address)
+                self.reader, self.writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
                 pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
