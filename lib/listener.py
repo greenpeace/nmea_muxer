@@ -108,10 +108,17 @@ class Listener:
         self.go_on = False
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
-        self.loop.stop()
-        self.loop.close()
         self.thread.join()
         self.resilience_thread.join()
+        while self.thread.is_alive():
+            sleep(0.1)
+        if self.loop:
+            self.loop.stop()
+            while self.loop.is_running():
+                sleep(0.1)
+            self.loop.close()
+            while not self.loop.is_closed():
+                sleep(0.1)
 
     def update(self):
         self.server_ids = list(map(lambda s: s.id, self.servers))
