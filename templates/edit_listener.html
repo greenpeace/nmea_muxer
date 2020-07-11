@@ -61,7 +61,7 @@
               <table class="table highlight pad responsive-table">
                 <thead>
                   <tr>
-                    {% for s in g.servers %}
+                    {% for s in g.talkers %}
                       <th>{{ s.name }}</th>
                     {% endfor %}
                     <th>Throttle</th>
@@ -72,14 +72,14 @@
                 </thead>
                 <tbody>
                   <tr>
-                    {% for s in g.servers %}
+                    {% for s in g.talkers %}
                       <td>
                         <div class="switch">
                           <label>
-                            {% if s in g.l.servers %}
-                              <input type="checkbox" checked=true name="server_{{s.id}}">
+                            {% if s in g.l.talkers %}
+                              <input type="checkbox" checked=true name="talker_{{s.id}}">
                             {% else %}
-                              <input type="checkbox" name="server_{{s.id}}">
+                              <input type="checkbox" name="talker_{{s.id}}">
                             {% endif %}
                             <span class="lever"></span>
                           </label>

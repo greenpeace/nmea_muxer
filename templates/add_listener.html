@@ -4,7 +4,7 @@
       <div class="row">
         <br/>
         <div class="col s12">
-          <form method="post" action="/add_listener" id="server_form">
+          <form method="post" action="/add_listener" id="talker_form">
               <span class="card-title left pad">Add NMEA Listener</span>
               <div class="right pad-10"></div>
               <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
@@ -16,7 +16,7 @@
                     <th>Name</th>
                     <th>IP</th>
                     <th>Port</th>
-                    {% for s in g.servers %}
+                    {% for s in g.talkers %}
                       <th>{{ s.name }}</th>
                     {% endfor %}
                     <th>Color</th>
@@ -39,11 +39,11 @@
                         <input name="port" value="" min="0" max="65535" type="number">
                       </div>
                     </td>
-                    {% for s in g.servers %}
+                    {% for s in g.talkers %}
                       <td>
                         <div class="switch">
                           <label>
-                            <input type="checkbox" checked=true name="server_{{s.id}}">
+                            <input type="checkbox" checked=true name="talker_{{s.id}}">
                             <span class="lever"></span>
                           </label>
                         </div>

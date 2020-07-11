@@ -7,12 +7,12 @@ import os, re, asyncio, random, string
 from .utils import *
 
 class Listener:
-    def __init__(self,listen_address,lid="",name="",servers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False,timeout=10):
+    def __init__(self,listen_address,lid="",name="",talkers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False,timeout=10):
         self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
         self.name = name
-        self.servers = servers
-        self.server_ids = list(map(lambda s: s.id, servers))
+        self.talkers = talkers
+        self.talker_ids = list(map(lambda s: s.id, talkers))
         self.msg_setup = msg_setup
         self.throttle = throttle
         self.color = color
@@ -35,12 +35,12 @@ class Listener:
         self.go_on = True
         self.uptime = 0
         self.started_at = dt.now()
-        self.for_export = ["id","listen_address","name","msg_setup","msg_order","server_ids","go_on","throttle","color","accumulate_sentences","resilient","go_on","timeout"]
+        self.for_export = ["id","listen_address","name","msg_setup","msg_order","talker_ids","go_on","throttle","color","accumulate_sentences","resilient","go_on","timeout"]
 
     def start(self):
         self.go_on = True
         self.alive = True
-        pprint('Starting {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
+        pprint('Starting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         self.started_at = dt.now()
 
 
@@ -63,7 +63,7 @@ class Listener:
     def restart(self):
         self.started_at = dt.now()
         self.reader = None
-        pprint('Restarting {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
+        pprint('Restarting          {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         if self.thread:
             resilient = self.resilient
             self.alive = False
@@ -124,14 +124,14 @@ class Listener:
                 sleep(0.1)
 
     def update(self):
-        self.server_ids = list(map(lambda s: s.id, self.servers))
+        self.talker_ids = list(map(lambda s: s.id, self.talkers))
 
 
-    def downdate(self,servers):
-        self.servers = []
-        for s in servers:
-            if s.id in self.server_ids:
-                self.servers.append(s)
+    def downdate(self,talkers):
+        self.talkers = []
+        for s in talkers:
+            if s.id in self.talker_ids:
+                self.talkers.append(s)
 
     def async_start(self):
         if not self.loop.is_running():
@@ -144,12 +144,12 @@ class Listener:
                 self.reader, self.writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
-                pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
+                pprint('{} {}:{}{}{} {}'.format(self.status.ljust(17," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
                 self.go_on = False
                 self.alive = False
             except OSError:
                 self.status = "SOCK BUSY"
-                pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
+                pprint('{} {}:{}{}{} {}'.format(self.status.ljust(17," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
                 self.go_on = False
                 self.alive = False
 
@@ -185,19 +185,19 @@ class Listener:
                                 self.msg_queue[verb] = payload
 
 
-                        for server in self.servers:
-                            server.emit(payload,self.color)
+                        for talker in self.talkers:
+                            talker.emit(payload,self.color)
 
             except Exception as err:
                 if str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
-                    pprint('{}: {}{}'.format(self.name, Style.RESET_ALL, err), "LISTENER", "DEBUG")
+                    pprint('{} {}:{}{}{} {}'.format(str(err).ljust(17," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
                 else:
-                    pprint('{}: {}{}'.format(self.name, Style.RESET_ALL, err), "LISTENER", "ERROR")
+                    pprint('{} {}:{}{}{} {}'.format(str(err).ljust(17," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
                     break
 
         if self.reader and self.reader._eof:
             self.status = "BROKEN PIPE"
-            pprint('{}: {}{}'.format(self.name, Fore.YELLOW, self.status), "LISTENER", "ERROR")
+            pprint('{} {}:{}{}{} {}'.format(str(err).ljust(17," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
 
         self.go_on = False
         self.alive = False

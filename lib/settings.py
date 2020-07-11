@@ -2,10 +2,10 @@ import os, json
 
 class Settings:
 
-    def __init__(self,app=None,period=0,servers=[],listeners=[]):
+    def __init__(self,app=None,period=0,talkers=[],listeners=[]):
         self.app = app
         self.period = period
-        self.servers = servers
+        self.talkers = talkers
         self.listeners = listeners
 
     def __repr__(self):
@@ -14,12 +14,12 @@ class Settings:
     def export(self):
         sts = {"settings":{}}
         sts["settings"]["period"] = self.period
-        sts["servers"] = self.servers
+        sts["talkers"] = self.talkers
         sts["listeners"] = self.listeners
         return sts
 
-    def save(self,servers,listeners,filename="current"):
-        self.servers = list(map(lambda server: server.as_json(), servers))
+    def save(self,talkers,listeners,filename="current"):
+        self.talkers = list(map(lambda talker: talker.as_json(), talkers))
         self.listeners = list(map(lambda listener: listener.as_json(), listeners))
         with open("./lib/settings/"+filename+".json","w") as f:
             f.write(json.dumps(self.export(), indent=2, sort_keys=True))

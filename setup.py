@@ -10,6 +10,7 @@ setup(
         'flask',
 	'flask_socketio',
 	'netifaces',
-        'gunicorn'
+        'gunicorn',
+        'colorama'
     ],
 )

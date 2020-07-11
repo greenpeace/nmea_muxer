@@ -44,11 +44,11 @@ def pprint(msg,sender="SYSTEM",severity="INFO"):
         pass
     else:
         sen_colors = {
-            "CLIENT"    : Fore.GREEN,
-            "TALKER"    : Fore.CYAN,
+            " CLIENT "  : Fore.GREEN,
+            " TALKER "  : Fore.CYAN,
             "LISTENER"  : Fore.BLUE,
-            "WEB"       : Fore.YELLOW,
-            "SYSTEM"    : Fore.MAGENTA
+            "  WEB   "  : Fore.YELLOW,
+            " SYSTEM "  : Fore.MAGENTA
             }
         sev_colors = {
             "DEBUG"     : Fore.GREEN,
@@ -65,13 +65,92 @@ def pprint(msg,sender="SYSTEM",severity="INFO"):
         print(sev_times.get(severity) + Style.DIM + dt.now().strftime("%y%m%d%H%M%S")+Style.RESET_ALL,sen_colors.get(sender)+sender.ljust(8," "),sev_colors.get(severity)+msg+Style.RESET_ALL)
 
 class Pusher:
-    def __init__(self,socketio,servers=[]):
+    def __init__(self,socketio,talkers=[]):
         self.socketio = socketio
-        self.servers = servers
+        self.talkers = talkers
 
     def push(self, sentence, sid=0, color="#ffffff"):
         self.socketio.emit('feed', {"sentence": sentence, "color":color}, namespace='/'+re.sub("\D","_",sid))
         
     def reload(self):
         self.socketio.emit('reset', {}, namespace="/general")
+
+
+sentences = { 
+            "HDM":"Heading - Magnetic Actual vessel heading in degrees Magnetic.",
+            "GGA":"Global Positioning System Fix Data",
+            "DTM":"Datum Reference",
+            "HDT":"Heading - True Actual vessel heading in degrees True produced by any device or system producing true heading.",
+            "ROT":"Rate Of Turn",
+            "VHW":"Water speed and heading",
+            "RMC":"Recommended Minimum Navigation Information",
+            "VBW":"Dual Ground/Water Speed",
+            "VTG":"Track made good and Ground speed",
+            "ZDA":"Time & Date - UTC, day, month, year and local time zone.",
+            "DBT":"Depth below transducer",
+            "DPT":"Depth of Water",
+            "VLW":"Distance Traveled through Water",
+            "PNG":"Ping status of networks*",
+            "VDO":"AIS Ownship Vessel Data Message",
+            "VDM":"AIS Vessel Data Message",
+            # source of below: http://aprs.gids.nl/nmea/
+            "AAM" : "Waypoint Arrival Alarm",
+            "ALM" : "GPS Almanac Data",
+            "APA" : "Autopilot Sentence \"A\"",
+            "APB" : "Autopilot Sentence \"B\"",
+            "ASD" : "Autopilot System Data",
+            "BEC" : "Bearing & Distance to Waypoint, Dead Reckoning",
+            "BOD" : "Bearing, Origin to Destination",
+            "BWC" : "Bearing & Distance to Waypoint, Great Circle",
+            "BWR" : "Bearing & Distance to Waypoint, Rhumb Line",
+            "BWW" : "Bearing, Waypoint to Waypoint",
+            "DBT" : "Depth Below Transducer",
+            "DCN" : "Decca Position",
+            "DPT" : "Depth",
+            "FSI" : "Frequency Set Information",
+            "GGA" : "Global Positioning System Fix Data",
+            "GLC" : "Geographic Position, Loran-C",
+            "GLL" : "Geographic Position, Latitude/Longitude",
+            "GSA" : "GPS DOP and Active Satellites",
+            "GSV" : "GPS Satellites in View",
+            "GXA" : "TRANSIT Position",
+            "HDG" : "Heading, Deviation & Variation",
+            "HDT" : "Heading, True",
+            "HSC" : "Heading Steering Command",
+            "LCD" : "Loran-C Signal Data",
+            "MTA" : "Air Temperature (to be phased out)",
+            "MTW" : "Water Temperature",
+            "MWD" : "Wind Direction",
+            "MWV" : "Wind Speed and Angle",
+            "OLN" : "Omega Lane Numbers",
+            "OSD" : "Own Ship Data",
+            "R00" : "Waypoint active route (not standard)",
+            "RMA" : "Recommended Minimum Specific Loran-C Data",
+            "RMB" : "Recommended Minimum Navigation Information",
+            "RMC" : "Recommended Minimum Specific GPS/TRANSIT Data",
+            "ROT" : "Rate of Turn",
+            "RPM" : "Revolutions",
+            "RSA" : "Rudder Sensor Angle",
+            "RSD" : "RADAR System Data",
+            "RTE" : "Routes",
+            "SFI" : "Scanning Frequency Information",
+            "STN" : "Multiple Data ID",
+            "TRF" : "Transit Fix Data",
+            "TTM" : "Tracked Target Message",
+            "VBW" : "Dual Ground/Water Speed",
+            "VDR" : "Set and Drift",
+            "VHW" : "Water Speed and Heading",
+            "VLW" : "Distance Traveled through the Water",
+            "VPW" : "Speed, Measured Parallel to Wind",
+            "VTG" : "Track Made Good and Ground Speed",
+            "WCV" : "Waypoint Closure Velocity",
+            "WNC" : "Distance, Waypoint to Waypoint",
+            "WPL" : "Waypoint Location",
+            "XDR" : "Transducer Measurements",
+            "XTE" : "Cross-Track Error, Measured",
+            "XTR" : "Cross-Track Error, Dead Reckoning",
+            "ZDA" : "Time & Date",
+            "ZFO" : "UTC & Time from Origin Waypoint",
+            "ZTG" : "UTC & Time to Destination Waypoint",
+        }
 

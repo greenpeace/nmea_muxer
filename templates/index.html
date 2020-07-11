@@ -46,34 +46,34 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for server in g.servers %}
-                    {% set status = "" if server.status == "UP" else server.status %}
+                  {% for talker in g.talkers %}
+                    {% set status = "" if talker.status == "UP" else talker.status %}
                     <tr>
-                      {% if server.alive %}
+                      {% if talker.alive %}
                         <td><span style="display: inline-flex; vertical-align: sub;"><i class="material-icons green-text" style="font-size: 18px">lens</i></span></td>
                         <td style="text-align:left;" class="teal-text"><small>{{ status }}</small></td>
                       {% else %}
                         <td><span style="display: inline-flex; vertical-align: sub;"><i class="material-icons blue-grey-text text-lighten-2" style="font-size: 18px">lens</i></span></td>
                         <td style="text-align:left;" class="blue-grey-text"><small>{{ status }}</small></td>
                       {% endif %}
-                      <td style="text-align:left;font-weight:bold;">{{server.name}}</td>
-                      <td style="text-align:right"><code class="selectable">{{server.ip}}&nbsp; </code></td>
-                      <td style="text-align:left"><code class="selectable"><b>{{server.port}}</b></code></td>
-                      <td class="selectable">{{server.iface}}</td>
+                      <td style="text-align:left;font-weight:bold;">{{talker.name}}</td>
+                      <td style="text-align:right"><code class="selectable">{{talker.ip}}&nbsp; </code></td>
+                      <td style="text-align:left"><code class="selectable"><b>{{talker.port}}</b></code></td>
+                      <td class="selectable">{{talker.iface}}</td>
                       <td class="blue-grey-text text-darken-1">
-                        <b> {{ server.clients | length() }}</b>
-                        <a onclick="clients('{{server.id}}','{{ server.name }}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
+                        <b> {{ talker.clients | length() }}</b>
+                        <a onclick="clients('{{talker.id}}','{{ talker.name }}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
                       </td>
                       <td class="blue-grey-text text-darken-1">
-                        {% if server.throttle %}
+                        {% if talker.throttle %}
                           <span class="blue-grey-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">check</i></span>
                         {% endif %}
                       </td>
                       <td class="blue-grey-text text-darken-1">
-                        {{ server.get_uptime() }}
+                        {{ talker.get_uptime() }}
                       </td>
                       <td class="blue-grey-text text-darken-1">
-                        <a onclick="feed('{{server.id}}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
+                        <a onclick="feed('{{talker.id}}')" class="teal-text" style="padding:0 15px; display: inline-flex; vertical-align: bottom;"><i class="material-icons" style="font-size:20px;">pageview</i></a>
                       </td>
                     </tr>
                   {% endfor %}
@@ -115,8 +115,8 @@
                 <span class="card-title">{{ l.name }}</span>
                 <code class="selectable" style="font-size:14px;">{{ l.listen_address[0] }}:<b>{{ l.listen_address[1] }}</b></code>
                 <br/>
-                {% for s in l.servers %}
-                  <span class="bold">> {{ s.name }}</span>
+                {% for s in l.talkers %}
+                  <span class="bold">&gt; {{ s.name }}</span>
                   <br/>
                 {% endfor %}
                 <ul class="plain sortable">
@@ -124,7 +124,8 @@
                     <li class="ui-state-default">
                       {% set color = "blue-grey lighten-2 off" if l.msg_setup[verb]['deny'] else "teal on"%}
                       <a onclick="toggle('{{l.id}}','{{verb}}')" class="sentence">
-                        <span class="badge inline white-text bold {{color}}" data-id="{{ verb }}">
+                        {% set sentence = g.sentences[verb[-3:]] if l.alive else ""%}
+                        <span title="{{ sentence }}" class="badge inline white-text bold {{color}}" data-id="{{ verb }}">
                           <i class="material-icons" style="font-size:16px;">menu</i>
                           <code>{{verb}}</code>
                         </span>
@@ -273,7 +274,7 @@
     }
   </script>
 
-  {% if g.popserver %}
+  {% if g.poptalker %}
     <script>
       edit_talkers();
     </script>

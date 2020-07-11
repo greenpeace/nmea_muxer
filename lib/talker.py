@@ -4,7 +4,7 @@ from datetime  import datetime as dt
 from .utils    import *
 import re, socket, random
 
-class Server:
+class Talker:
 
 
     def __init__(self,bind_address,iface="",name="",throttle=False,listeners=[],pusher=None,verbose=False):
@@ -55,19 +55,19 @@ class Server:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            pprint('Starting {}:{}{} {}{}'.format(self.bind_address[0].rjust(15," "),Style.BRIGHT,str(self.bind_address[1]).ljust(5," "),Fore.CYAN,self.name), "TALKER", "INFO")
+            pprint('Starting            {}:{}{} {}{}'.format(self.bind_address[0].rjust(15," "),Style.BRIGHT,str(self.bind_address[1]).ljust(5," "),Fore.CYAN,self.name), " TALKER ", "INFO")
             if not self.thread:
                 self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
                 self.thread.start()
         except Exception as err:
             if self.tries >= 0:
-                print(err, self.ip, " retrying")
+                pprint('Retrying            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "DEBUG")
                 sleep(1)
                 self.restart()
             else:
                 self.alive = False
                 self.go_on = False
-                print("Tried many times, didn't work")
+                pprint('Failed to start  {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "WARN")
                 pass
 
     def restart(self):
@@ -91,7 +91,7 @@ class Server:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            print(dt.now().strftime("%Y%m%d %H%M%S"),'Restarting server on {} port {}'.format(*self.bind_address))
+            pprint('Restarting        {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
             self.alive = True
             self.go_on = True
             self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
@@ -110,7 +110,6 @@ class Server:
     def insist(self):
         while self.resilience_alive:
             if not self.alive:
-                print(dt.now().strftime("%Y%m%d %H%M%S"),self.name,'insisting')
                 self.restart()
             sleep(1)
 
@@ -143,21 +142,19 @@ class Server:
 
     def emit(self,sentence,color,force=False):
         if self.verbose:
-            print(sentence) 
+            pprint(Fore.WHITE+sentence.decode().strip(), " SYSTEM ", "INFO")
         if self.alive and (force or not self.throttle):
             for client in self.clients:
                 try:
                     client.sendall(sentence)
                 except Exception as err:
                     if err.errno == 32:
-                        print(dt.now().strftime("%Y%m%d %H%M%S"),"Client disconnected:",err.strerror)
+                        pprint('Disconnecting    {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
                     else:
-                        print()
-                        print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Client:",err)
-                        print()
+                        pprint('EXCEPTION        {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "ERROR")
             if self.pusher and self.push:
                 self.pusher.push(sentence.decode().strip(),self.id,color)
 
@@ -168,7 +165,7 @@ class Server:
             for l in self.listeners:
                 if l.throttle <= 0:
                     next
-                elif self.id in l.server_ids:
+                elif self.id in l.talker_ids:
                     tl[l.id] = l.throttle
 
             if len(tl) == 0:
@@ -189,8 +186,6 @@ class Server:
                                 ts[step].append(l)
                             else:
                                 ts[step] = [l]
-                #if step in ts.keys():
-                #    print(step, ts[step])
             self.throttle_steps = ts
 
 
@@ -260,14 +255,12 @@ class Server:
             client = None
             try:
                 client, client_address = self.socket.accept()
-                pprint('Incoming {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), "CLIENT", "INFO")
+                pprint('Incoming          {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                 self.clients.append(client)
 
             except KeyboardInterrupt:
-                print()
-                print(dt.now().strftime("%Y%m%d %H%M%S"),"KeyboardInterrupt for Server - closing client sockets")
+                pprint("KeyboardInterrupt {}:{}{}{} {} - closing client sockets".format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name)," TALKER ","INFO")
                 self.kill()
-                print()
 
             except OSError as err:
                 if err.errno == 22:
@@ -276,15 +269,11 @@ class Server:
                         if client in self.clients:
                             self.clients.remove(client)
                 else:
-                    print()
-                    print(dt.now().strftime("%Y%m%d %H%M%S"),"Closing Server:",err)
-                    print()
+                    pprint('Closing           {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
 
 
             except Exception as err:
-                print()
-                print(dt.now().strftime("%Y%m%d %H%M%S"),"EXCEPTION for Server:",err)
-                print()
+                pprint('EXCEPTION         {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.YELLOW, self.name), " TALKER ", "ERROR")
                 self.alive = False
 
 

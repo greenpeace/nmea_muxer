@@ -10,7 +10,7 @@ import threading
 import netifaces
 import socket, json, re, os, resource, logging
 
-from lib.server     import Server
+from lib.talker     import Talker
 from lib.listener   import Listener
 from lib.settings   import Settings
 from lib.utils      import *
@@ -21,7 +21,7 @@ app.config['SECRET_KEY'] = 'M-LkyLF&sid=379941accd8541ef9f9c7e8efb323c82'
 
 socketio = SocketIO(app,async_mode='threading')
 pusher = Pusher(socketio)
-servers = []
+talkers = []
 listeners = []
 
 settings = Settings(app)
@@ -31,17 +31,16 @@ logging.getLogger('werkzeug').setLevel(logging.WARN)
 #print(logger.level)
 
 colors = {"Red":"#f44336", "Pink":"#e91e63", "Purple":"#9c27b0", "Deep purple":"#673ab7", "Indigo":"#3f51b5", "Blue":"#2196f3", "Light blue":"#03a9f4", "Cyan":"#00bcd4", "Teal":"#009688", "Green":"#4caf50", "Light green":"#8bc34a", "Lime":"#cddc39", "Yellow":"#ffeb3b", "Amber":"#ffc107", "Orange":"#ff9800", "Deep orange":"#ff5722", "Brown":"#795548", "Blue grey":"#607d8b", "Grey":"#9e9e9e", "White":"#ffffff"}
-
 @app.before_request
 def before_request():
     #print_threads()
 
-    g.popserver = False
-    if servers == []:
+    g.poptalker = False
+    if talkers == []:
         init()
         sleep(0.1)
-        if servers == []:
-            g.popserver = True
+        if talkers == []:
+            g.poptalker = True
 
     if request.headers.getlist("X-Forwarded-For"):
         g.ip = request.headers.getlist("X-Forwarded-For")[0]
@@ -50,35 +49,36 @@ def before_request():
     g.day = dt.now().strftime("%a, %b %d")
     g.title = "NMEA MUXER"
     g.threadCount = threading.active_count()
-    g.serverCount = len(servers)
+    g.talkerCount = len(talkers)
     g.listenerCount = len(listeners)
     g.clientCount = 0
-    for s in servers:
+    for s in talkers:
         g.clientCount += len(s.clients)
 
 
 @app.route("/")
 def index():
-    g.servers = servers
+    g.talkers = talkers
     g.listeners = listeners
+    g.sentences = sentences
     return render_template("index.html")
 
 @app.route("/clients/<sid>")
 def clients(sid):
-    server = None
-    for s in servers:
+    talker = None
+    for s in talkers:
         if s.id == sid:
-            server = s
+            talker = s
 
-    if server:
-        g.s = server
+    if talker:
+        g.s = talker
         if len(g.s.clients) > 0:
             g.clients = []
-            for c in server.clients:
+            for c in talker.clients:
                 try:
                     g.clients.append(["",c.getpeername()[0],c.getpeername()[1]])
                 except:
-                    server.clients.remove(c)
+                    talker.clients.remove(c)
                 #try:
                 #    g.clients.append([socket.gethostbyaddr(c.getpeername()[0])[0],c.getpeername()[0],c.getpeername()[1]])
                 #except:
@@ -98,55 +98,55 @@ def setup():
     if request.method == 'POST':
         try:
             for iface in deformalize(request.form):
-                print(iface)
+                #print(iface)
                 hold = False
                 iid = iface['ip']+":"+str(iface['port'])
-                for server in servers:
-                    if iid == server.id:
-                        if int(iface['port']) != server.port:
+                for talker in talkers:
+                    if iid == talker.id:
+                        if int(iface['port']) != talker.port:
                             for l in listeners:
-                                if server in l.servers:
-                                    l.servers.remove(server)
-                            servers.remove(server)
-                            server.kill()
+                                if talker in l.talkers:
+                                    l.talkers.remove(talker)
+                            talkers.remove(talker)
+                            talker.kill()
                         else:
                             hold = True
 
-                        if iface['name'] != server.name:
-                            server.name = iface['name']
+                        if iface['name'] != talker.name:
+                            talker.name = iface['name']
 
                         if 'active' in iface.keys():
-                            server.resume()
+                            talker.resume()
                         else:
-                            server.pause()
+                            talker.pause()
 
                         if 'throttle' in iface.keys():
-                            server.throttle = True
-                            server.run_throttle()
+                            talker.throttle = True
+                            talker.run_throttle()
                         else:
-                            server.throttle = False
-                            server.throttling = False
+                            talker.throttle = False
+                            talker.throttling = False
 
                         if 'delete' in iface.keys():
                             for l in listeners:
-                                if server in l.servers:
-                                    l.servers.remove(server)
-                            servers.remove(server)
-                            server.kill()
+                                if talker in l.talkers:
+                                    l.talkers.remove(talker)
+                            talkers.remove(talker)
+                            talker.kill()
                             hold = True
 
 
                 if not hold:
                     try:
-                        server = Server((iface['ip'],int(iface['port'])),iface['id'],iface['name'],('throttle' in iface.keys() ),listeners, pusher)
-                        server.start()
-                        server.alive = ('active' in iface.keys() )
-                        servers.append(server)
+                        talker = Talker((iface['ip'],int(iface['port'])),iface['id'],iface['name'],('throttle' in iface.keys() ),listeners, pusher)
+                        talker.start()
+                        talker.alive = ('active' in iface.keys() )
+                        talkers.append(talker)
                     except:
                         pass
 
             for l in listeners:
-                l.downdate(servers)
+                l.downdate(talkers)
             update()
 
             return redirect("/",code=303)
@@ -156,9 +156,9 @@ def setup():
 
 
 
-    if servers == []:
+    if talkers == []:
         g.ifaces = []
-        g.slen = len(servers)
+        g.slen = len(talkers)
         for name in netifaces.interfaces():
             iface = netifaces.ifaddresses(name)
             if 2 in iface.keys():
@@ -166,12 +166,12 @@ def setup():
         return render_template("setup.html")
 
     else:
-        g.servers = []
+        g.talkers = []
         g.ifaces = []
-        g.slen = len(servers)
-        for server in servers:
-            if server.iface in netifaces.interfaces() or True:
-                g.servers.append([server.iface,server.name,server.ip,server.port,(1 if server.alive else 0),(1 if server.throttle else 0)])
+        g.slen = len(talkers)
+        for talker in talkers:
+            if talker.iface in netifaces.interfaces() or True:
+                g.talkers.append([talker.iface,talker.name,talker.ip,talker.port,(1 if talker.alive else 0),(1 if talker.throttle else 0)])
         for name in netifaces.interfaces():
             iface = netifaces.ifaddresses(name)
             if 2 in iface.keys():
@@ -185,7 +185,7 @@ def setup():
 @app.route("/add_listener",methods=["GET","POST"])
 def add_listener():
     g.error = ''
-    g.servers = servers
+    g.talkers = talkers
     if request.method == 'POST':
         if not re.match(r"^\d\d?\d?\.\d\d?\d?\.\d\d?\d?\.\d\d?\d?$",request.form['ip']):
             g.error = '<script>M.toast({html:"Invalid IP address",classes:"red darken-4"})</script>'
@@ -194,18 +194,18 @@ def add_listener():
             g.error = '<script>M.toast({html:"Invalid port number",classes:"red darken-4"})</script>'
             return render_template("add_listener.html")
         try:
-            print(request.form)
-            ss = servers if ('publish' in request.form.keys()) else []
+            #print(request.form)
+            ss = talkers if ('publish' in request.form.keys()) else []
             listener = Listener( (request.form['ip'], int(request.form['port'])), "", request.form['name'])
             listener.color = request.form['color']
             listener.start()
             listeners.append(listener)
-            listener.servers = []
+            listener.talkers = []
             for k in request.form:
-                if re.match(r"^server_",k):
-                    for s in servers:
-                        if s.id == re.sub(r"^server_","",k):
-                            listener.servers.append(s)
+                if re.match(r"^talker_",k):
+                    for s in talkers:
+                        if s.id == re.sub(r"^talker_","",k):
+                            listener.talkers.append(s)
             listener.update()
             update()
             return redirect("/",code=303)
@@ -226,15 +226,15 @@ def edit_listener(id):
             listener = l
 
     if request.method == 'POST' and listener:
-        print(request.form)
+        #print(request.form)
         try:
             listener.name = request.form['name']
-            listener.servers = []
+            listener.talkers = []
             for k in request.form:
-                if re.match(r"^server_",k):
-                    for s in servers:
-                        if s.id == re.sub(r"^server_","",k):
-                            listener.servers.append(s)
+                if re.match(r"^talker_",k):
+                    for s in talkers:
+                        if s.id == re.sub(r"^talker_","",k):
+                            listener.talkers.append(s)
             oldthrottle = listener.throttle
             listener.throttle = int(request.form['throttle'])
 
@@ -253,7 +253,7 @@ def edit_listener(id):
             listener.update()
             update()
             if oldthrottle != listener.throttle:
-                for s in listener.servers:
+                for s in listener.talkers:
                     if s.throttling:
                         s.rerun_throttle()
             return redirect("/",code=303)
@@ -264,7 +264,7 @@ def edit_listener(id):
 
     if listener:
         g.l = listener
-        g.servers = servers
+        g.talkers = talkers
         g.colors = colors
         return render_template("edit_listener.html")
     else:
@@ -336,7 +336,7 @@ def reorder():
         ls = []
         for lid in request.form.getlist('order[]'):
             for l in listeners:
-                print(l.id)
+                #print(l.id)
                 if l.id == lid:
                     ls.append(l)
         listeners = ls
@@ -354,7 +354,7 @@ def reorder_sentences(lid):
             if l.id == lid:
                 listener = l
         if listener:
-            print(request.form)
+            #print(request.form)
             listener.msg_order = request.form.getlist('order[]')
             update()
             return "ack"
@@ -379,7 +379,6 @@ def toggle_verb():
                 update()
                 return "ack"
             except:
-                print("oy")
                 return "nack"
         else:
             return "nack"
@@ -392,9 +391,9 @@ def toggle_verb():
 def feed(sid):
     g.s = None
     g.listeners = listeners
-    for s in servers:
+    for s in talkers:
         if sid == s.id:
-            print("pushing", s.name)
+            #print("pushing", s.name)
             s.push = True
             g.s = s
     g.namespace = '/'+re.sub("\D","_",sid)
@@ -403,7 +402,7 @@ def feed(sid):
 @app.route("/nofeed/<sid>")
 def nofeed(sid):
     g.s = None
-    for s in servers:
+    for s in talkers:
         if sid == s.id:
             g.s = s
     s.push = False
@@ -432,14 +431,14 @@ def init():
     threading.enumerate()[1].setName("MainFork")
     if os.path.isfile(os.path.join(app.root_path, "lib", "settings", "current.json")):
         settings.load()
-        for s in settings.servers:
-            server = Server(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher)
-            servers.append(server)
-            server.start()
+        for s in settings.talkers:
+            talker = Talker(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher)
+            talkers.append(talker)
+            talker.start()
         for l in settings.listeners:
             ss = []
-            for s in servers:
-                if s.id in l['server_ids']:
+            for s in talkers:
+                if s.id in l['talker_ids']:
                     ss.append(s)
             color = '#ffffff' if not 'color' in l.keys() else l['color']
             accumulate = False if not 'accumulate_sentences' in l.keys() else l['accumulate_sentences']
@@ -451,22 +450,22 @@ def init():
             if not 'go_on' in l.keys() or l['go_on'] == False:
                 listener.pause()
         update()
-        for s in servers:
-            if server.throttle:
-                server.run_throttle();
+        for s in talkers:
+            if talker.throttle:
+                talker.run_throttle();
 
 def update():
-    settings.save(servers,listeners)
-    for s in servers:
+    settings.save(talkers,listeners)
+    for s in talkers:
         s.listeners = listeners
-    pusher.servers = servers
+    pusher.talkers = talkers
     pusher.reload()
 
 def print_threads():
     print()
     for t in threading.enumerate():
         print(t.name)
-    if servers == []:
+    if talkers == []:
         init()
     print()
 
