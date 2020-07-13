@@ -76,6 +76,7 @@ class Talker:
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
         for client in self.clients:
+            client.shutdown(SHUT_RDWR)
             client.close()
             self.clients.remove(client)
         if self.socket:
@@ -119,6 +120,7 @@ class Talker:
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
         for client in self.clients:
+            client.shutdown(SHUT_RDWR)
             client.close()
             self.clients.remove(client)
         if self.socket:
@@ -147,14 +149,17 @@ class Talker:
             for client in self.clients:
                 try:
                     client.sendall(sentence)
+                    #print(client.recv(1024))
                 except Exception as err:
                     if err.errno in [9,32,110]:
                         pprint('Disconnecting    {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
+                        client.shutdown(SHUT_RDWR)
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
                     else:
-                        pprint('EXCEPTION        {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "ERROR")
+                        pprint('EXCEPTION {} {}:{}{}'.format(err,client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "ERROR")
+                        client.shutdown(SHUT_RDWR)
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
@@ -260,6 +265,7 @@ class Talker:
                 client, client_address = self.socket.accept()
                 pprint('Incoming          {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                 self.clients.append(client)
+                #client.setblocking(False)
 
             except KeyboardInterrupt:
                 pprint("KeyboardInterrupt {}:{}{}{} {} - closing client sockets".format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name)," TALKER ","INFO")
@@ -268,6 +274,7 @@ class Talker:
             except OSError as err:
                 if err.errno == 22:
                     if client:
+                        client.shutdown(SHUT_RDWR)
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
