@@ -148,13 +148,16 @@ class Talker:
                 try:
                     client.sendall(sentence)
                 except Exception as err:
-                    if err.errno == 32:
+                    if err.errno in [9,32,110]:
                         pprint('Disconnecting    {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
                     else:
                         pprint('EXCEPTION        {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "ERROR")
+                        client.close()
+                        if client in self.clients:
+                            self.clients.remove(client)
             if self.pusher and self.push:
                 self.pusher.push(sentence.decode().strip(),self.id,color)
 

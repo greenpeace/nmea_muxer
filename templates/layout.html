@@ -26,6 +26,7 @@
           </a>
           <ul class="right hide-on-med-and-down">
             <li class="pad" style="padding-top:0;"> 
+              <a class="pad right teal-text" onclick="edit_settings();" style="padding: 0; margin: -21px 0 0 8px;"><i class="material-icons">settings</i></a>
 
               {% if g.clientCount == 0 %}
                 <span title="Clients: {{ g.clientCount }}" class="badge navitem red darken-4 white-text">C{{ g.clientCount }}</span>
@@ -61,6 +62,7 @@
 
     <main>
       <div class="container">
+        <div id="settings" class="modal" style="max-height:92%"> </div>
         {% block content %}
         {% endblock %}
       </div>
@@ -92,6 +94,7 @@
       <script>
         $(document).ready(function(){ 
           $('#threads').modal();
+          $('#settings').modal();
           window.setTimeout(logoGreen,100);
         });
         function logoGreen (){ 
@@ -102,6 +105,14 @@
           $(".brand-logo i").css("color","#FFFFFF");
         }
 
+        function edit_settings() {
+          $.get("/settings",function(data){
+            if (data.length>0) {
+              $('#settings').html(data);
+              $('#settings').modal('open');
+            }
+          });
+        }
 
         function threads() {
           $.get("/threads",function(data){

@@ -1,6 +1,6 @@
-### NMEA MUXER
+### NMEA MULTIPLEXER
 
-Serial NMEA feed multiplexer and controller software written with Python
+**NMEA feed multiplexer and controller software written with Python**
 
 *Soon to document main features...*
 
