@@ -115,8 +115,10 @@ class Talker:
             sleep(1)
 
     def kill(self):
+        pprint('Closing             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
         self.status = "CLOSING"
         self.alive = False
+        self.go_on = False
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
         for client in self.clients:
@@ -125,32 +127,45 @@ class Talker:
             self.clients.remove(client)
         if self.socket:
             self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
         self.thread.join()
-        self.resilience_thread.join()
+        if self.resilience_thread:
+            self.resilience_thread.join()
         self.status = "KILLED"
 
 
     def pause(self):
-        if self.alive:
+        if self.go_on:
+            for client in self.clients:
+                client.shutdown(socket.SHUT_RDWR)
+                client.close()
+                self.clients.remove(client)
             self.status = "PAUSED"
-            self.alive = False
+            self.go_on = False
             self.uptime += (dt.now() - self.started_at).total_seconds()
+            pprint('Pausing             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
 
     def resume(self):
-        if not self.alive:
+        if not self.go_on:
             self.status = "UP"
-            self.alive = True
+            self.go_on = True
             self.uptime += (dt.now() - self.started_at).total_seconds()
+            pprint('Resuming            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
 
     def emit(self,sentence,color,force=False):
         if self.verbose:
             pprint(Fore.WHITE+sentence.decode().strip(), " SYSTEM ", "INFO")
-        if self.alive and (force or not self.throttle):
+        if self.alive and self.go_on and (force or not self.throttle):
             for client in self.clients:
                 try:
                     client.sendall(sentence)
                 except Exception as err:
-                    if err.errno in [9,32,110]:
+                    if err.errno in [32]:
+                        pprint('Disconnecting client: not connected', " CLIENT ", "INFO")
+                        client.close()
+                        if client in self.clients:
+                            self.clients.remove(client)
+                    elif err.errno in [9,110]:
                         pprint('Disconnecting       {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                         client.shutdown(socket.SHUT_RDWR)
                         client.close()
@@ -262,7 +277,6 @@ class Talker:
             client = None
             try:
                 client, client_address = self.socket.accept()
-                pprint('Incoming            {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                 self.clients.append(client)
                 #client.setblocking(False)
 
@@ -285,6 +299,15 @@ class Talker:
                 pprint('EXCEPTION         {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.YELLOW, self.name), " TALKER ", "ERROR")
                 self.alive = False
 
+            if client:
+                if self.go_on:
+                    pprint('Incoming            {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
+                else:
+                    pprint('Rejecting           {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "DEBUG")
+                    client.shutdown(socket.SHUT_RDWR)
+                    client.close()
+                    if client in self.clients:
+                        self.clients.remove(client)
 
 
     def get_uptime(self):

@@ -1,70 +1,52 @@
 
 
+    <style>
+      .settings button { min-width: 200px; }
+      .settings label { color: #666; }
+    </style>
 
     <div class="modal-content">
       <div class="row">
-        <br/>
-        <div class="col s12">
-          <form method="post" action="/settings" id="settings_form">
-              <span class="card-title left pad"></span>
-              <div class="right pad-10"></div>
-              <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal"><i class="material-icons" style="font-size: 42px">check</i></button>
-              <div class="right pad-10"></div>
-              <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
-              <table class="table highlight pad responsive-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>IP</th>
-                    <th>Port</th>
-                    {% for s in g.talkers %}
-                      <th>{{ s.name }}</th>
-                    {% endfor %}
-                    <th>Color</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>
-                      <div class="input-field">
-                        <input name="name" value="" type="text"/>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="input-field" style="width:120px;">
-                        <input name="ip" value="" type="text"/>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="input-field" style="max-width:72px;">
-                        <input name="port" value="" min="0" max="65535" type="number">
-                      </div>
-                    </td>
-                    {% for s in g.talkers %}
-                      <td>
-                        <div class="switch">
-                          <label>
-                            <input type="checkbox" checked=true name="talker_{{s.id}}">
-                            <span class="lever"></span>
-                          </label>
-                        </div>
-                      </td>
-                    {% endfor %}
-                    <td>
-                      <div class="input-field">
-                        <select name="color">
-                          {% for color in g.colors %} 
-                            {% if "#ffffff" == g.colors[color] %}
-                              <option value="{{ g.colors[color] }}" selected> {{ color }} </option>
-                            {% else %}
-                              <option value="{{ g.colors[color] }}"> {{ color }} </option>
-                            {% endif %}
-                          {% endfor %}
-                        </select>
-                      </div>
-                  </tr>
-                </tbody>
-              </table>
+        <div class="col s12 settings">
+          <div class="right pad-10"></div>
+          <h5 class="card-title left">System settings</h5>
+          <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+          <form method="post" action="/save_settings" id="save">
+            <div class="row">
+              <div class="col s12">
+                <h6 class="card-title">Save settings</h6>
+                <input name="savefile" type="text" placeholder="File Name" required />
+                <br/>
+                <button type="submit" class="btn teal"><i class="material-icons left">save</i>SAVE</button>
+              </div>
+            </div>
+          </form>
+          {% if g.toload %}
+            <div class="row">
+              <div class="col s12">
+                <h6 class="card-title">Load settings</h6>
+                <form method="post" action="/load_settings" id="load">
+                  {% for f in g.saveds %}
+                    <label>
+                      <input name="loadfile" type="radio" value="{{ f[0] }}" required/>
+                      <span>{{ f[0] }}</span>
+                    </label>
+                    <br/>
+                  {% endfor %}
+                  <br/>
+                  <button type="submit" class="btn teal"><i class="material-icons left">folder_open</i>LOAD SELECTED</button>
+                </form>
+                <button class="btn grey" id="delete"><i class="material-icons left">delete</i>DELETE SELECTED</button>
+              </div>
+            </div>
+          {% endif %}
+          <form method="post" action="/reboot" id="reboot">
+            <div class="row">
+              <div class="col s12">
+                <hr/>
+                <br/>
+                <button type="submit" class="btn red darken-4"><i class="material-icons left">replay</i>RESTART SERVICE</button>
+              </div>
             </div>
           </form>
         </div>
@@ -72,14 +54,37 @@
     </div>
 
   <script>
-    colors = {{ g.colors | safe }};
-    $('select').formSelect({classes:"colorselect"});
-    $.each($(".colorselect ul li"),function(i,e){
-      ctext = $(e).text().trim()
-      $(e).prepend("<span class='rect' style='background-color:"+colors[ctext]+";'>&nbsp;</span>")
+    $("#load").on("submit",function(e){
+      e.preventDefault();
+      $("#loading").fadeIn(500)
+      $.post("/load_settings",{loadfile:$(this).serializeArray()[0].value},function(data){
+        console.log(data);
+        if (data == "ack") {
+          $.get("/");
+          setTimeout(function(){window.location = "/"},1200)
+        }
+      })
+    })
+    $("#delete").on("click",function(e){
+      e.preventDefault();
+      $.post("/delete_settings",{loadfile:$("#load").serializeArray()[0].value},function(data){
+        console.log(data);
+        if (data == "ack") {
+          $("#settings").modal("close");
+        }
+      })
+    })
+    $("#reboot").on("submit",function(e){
+      e.preventDefault();
+      $("#loading").fadeIn(500)
+      $.post("/reboot",{},function(data){
+        if (data == "ack") {
+          $.get("/");
+          setTimeout(function(){window.location = "/"},1200)
+        }
+      })
     })
   </script>
-
 
   {{ g.error | safe }}
 

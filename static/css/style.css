@@ -159,3 +159,18 @@ span.badge.inline {
   overflow: hidden auto;
   font-size: 11px;
 }
+
+#loading {
+  display: none;
+  position: fixed;
+  top:0;
+  left:0;
+  width: 100vw;
+  height:100vw;
+  background: #cfd8dccc;
+  z-index: 99999999;
+}
+#loading .preloader-wrapper {
+  margin-top: calc( 50vh - 32px );
+  margin-left: calc( 50vw - 32px );
+}

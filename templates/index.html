@@ -185,7 +185,7 @@
           })
         }
       });
-      $("body").dblclick(function(e){
+      $("body").not(".card, #loading").dblclick(function(e){
         e.preventDefault();
         window.location.reload();
       })

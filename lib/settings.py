@@ -18,18 +18,21 @@ class Settings:
         sts["listeners"] = self.listeners
         return sts
 
-    def save(self,talkers,listeners,filename="current"):
+    def save(self,talkers,listeners,filename="_current"):
         self.talkers = list(map(lambda talker: talker.as_json(), talkers))
         self.listeners = list(map(lambda listener: listener.as_json(), listeners))
         with open("./lib/settings/"+filename+".json","w") as f:
             f.write(json.dumps(self.export(), indent=2, sort_keys=True))
 
-    def load(self,filename="current"):
-        with open(os.path.join(self.app.root_path, "lib", "settings", (filename+".json")),"r") as f:
+    def load(self,filename="_current"):
+        path = os.path.join(self.app.root_path, "lib", "settings", (filename+".json"))
+        if not os.path.isfile(path):
+            return [False,"File not found"]
+        with open(path,"r") as f:
             try:
                 data = json.load(f)
             except:
-                return "JSON file parse error"
+                return [False,"JSON file parse error"]
 
             for unit in data:
                 if unit == 'settings':
@@ -37,6 +40,8 @@ class Settings:
                         self.__dict__[key] = value
                 else:
                     self.__dict__[unit] = data[unit]
+
+            return [True]
 
 
 

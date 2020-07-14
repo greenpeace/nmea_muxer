@@ -5,6 +5,7 @@ from flask_socketio import SocketIO, emit
 from time           import sleep
 from datetime       import datetime as dt
 from colorama       import Fore, Back, Style
+from shutil         import copyfile
 
 import threading
 import netifaces
@@ -171,7 +172,7 @@ def setup():
         g.slen = len(talkers)
         for talker in talkers:
             if talker.iface in netifaces.interfaces() or True:
-                g.talkers.append([talker.iface,talker.name,talker.ip,talker.port,(1 if talker.alive else 0),(1 if talker.throttle else 0)])
+                g.talkers.append([talker.iface,talker.name,talker.ip,talker.port,(1 if talker.go_on else 0),(1 if talker.throttle else 0)])
         for name in netifaces.interfaces():
             iface = netifaces.ifaddresses(name)
             if 2 in iface.keys():
@@ -425,29 +426,66 @@ def register():
     sleep(0.1)
     return client_message
 
-@app.route("/reboot")
-def reboot():
-    pid = open(os.path.join(app.root_path, "lib", "app.pid"),"r").read()
-    os.system("kill -HUP {}".format(pid))
-    g.pid = pid
-    return render_template("reboot.html")
 
-@app.route("/settings",methods=["GET","POST"])
-def edit_settings():
+
+
+@app.route("/reboot",methods=["POST"])
+def reboot_request():
     if request.method == 'POST':
-        global settings
-        print(request.form)
-        update()
-        return "ack"
+        rebooted = reboot()
+        #sleep(1)
+        return {True:"ack", False:"nack"}[rebooted]
 
+
+
+
+
+@app.route("/settings",methods=["GET"])
+def edit_settings():
     g.listeners = listeners
+    g.saveds = []
+    for (_,_, files) in os.walk(os.path.join(app.root_path, "lib", "settings")):
+        for f in files:
+            if not f in ["_current.json","_backup.json"]:
+                g.saveds.append([f[0:-5],os.path.getmtime(os.path.join(app.root_path, "lib", "settings",f))])
+                g.toload = len(g.saveds) > 0
     return render_template("settings.html")
+
+
+@app.route("/save_settings",methods=["POST"])
+def save_settings():
+    if request.method == 'POST':
+        settings.save(talkers,listeners,request.form['savefile'])
+    return redirect("/",code=303)
+
+@app.route("/load_settings",methods=["POST"])
+def load_settings():
+    if request.method == 'POST':
+        frompath = os.path.join(app.root_path, "lib", "settings", request.form['loadfile']+".json")
+        topath = os.path.join(app.root_path, "lib", "settings", "_current.json")
+        bkpath = os.path.join(app.root_path, "lib", "settings", "_backup.json")
+        if os.path.isfile(frompath):
+            copyfile(topath,bkpath)
+            copyfile(frompath,topath)
+            rebooted = reboot()
+            #sleep(1)
+            return {True:"ack", False:"nack"}[rebooted]
+    return "nack"
+
+@app.route("/delete_settings",methods=["POST"])
+def delete_settings():
+    if request.method == 'POST':
+        path = os.path.join(app.root_path, "lib", "settings", request.form['loadfile']+".json")
+        if os.path.isfile(path):
+            os.remove(path)
+            return "ack"
+    return "nack"
 
 
 
 def init():
     threading.enumerate()[1].setName("MainFork")
-    if os.path.isfile(os.path.join(app.root_path, "lib", "settings", "current.json")):
+    if os.path.isfile(os.path.join(app.root_path, "lib", "settings", "_current.json")):
         settings.load()
         for s in settings.talkers:
             talker = Talker(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher)
@@ -471,6 +509,21 @@ def init():
         for s in talkers:
             if talker.throttle:
                 talker.run_throttle();
+
+def reboot():
+    if os.path.isfile(os.path.join(app.root_path, "lib", "app.pid")):
+        pid = open(os.path.join(app.root_path, "lib", "app.pid"),"r").read().strip()
+        if re.match(r"^\d+$",pid):
+            for talker in talkers:
+                talker.kill()
+            for listener in listeners:
+                listener.kill()
+            os.system("kill -HUP {}".format(pid))
+            return True
+        else:
+            return False
+    else:
+        return False
 
 def update():
     settings.save(talkers,listeners)
