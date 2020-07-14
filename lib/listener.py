@@ -206,9 +206,6 @@ class Listener:
                 else:
                     pprint('ValueError: {} {}:{}{}{} {}'.format(str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
 
-            except Exception as err:
-                pprint('EXCEPTION ({}): {} {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
-                break
 
         if self.reader and self.reader._eof:
             self.status = "BROKEN PIPE"

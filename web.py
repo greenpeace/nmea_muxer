@@ -425,6 +425,13 @@ def register():
     sleep(0.1)
     return client_message
 
+@app.route("/reboot")
+def reboot():
+    pid = open(os.path.join(app.root_path, "lib", "app.pid"),"r").read()
+    os.system("kill -HUP {}".format(pid))
+    g.pid = pid
+    return render_template("reboot.html")
+
 @app.route("/settings",methods=["GET","POST"])
 def edit_settings():
     if request.method == 'POST':
