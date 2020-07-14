@@ -149,7 +149,6 @@ class Talker:
             for client in self.clients:
                 try:
                     client.sendall(sentence)
-                    #print(client.recv(1024))
                 except Exception as err:
                     if err.errno in [9,32,110]:
                         pprint('Disconnecting    {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
