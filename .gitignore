@@ -1,7 +1,8 @@
 __pycache__/
 */*.pyc
 lib/settings/*
-lib/logs/*
+lib/app.pid
 dist/
+log/
 nmea_muxer.egg-info/
 

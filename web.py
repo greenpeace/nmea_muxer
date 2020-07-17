@@ -1,3 +1,5 @@
+
+
 from flask          import Flask, render_template, session, request, \
                            g, redirect
 from flask_socketio import SocketIO, emit
@@ -16,6 +18,10 @@ from lib.listener   import Listener
 from lib.settings   import Settings
 from lib.utils      import *
 
+
+
+
+
 app = Flask(__name__)
 #app._static_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 app.config['SECRET_KEY'] = 'M-LkyLF&sid=379941accd8541ef9f9c7e8efb323c82'
@@ -26,12 +32,14 @@ talkers = []
 listeners = []
 
 settings = Settings(app)
-logging.basicConfig(level=logging.WARN)
+logging.basicConfig(level=logging.INFO,filename=os.path.join(app.root_path, "log", "nmea_muxer.log"),format=Fore.CYAN+'%(message)s')
 logging.getLogger('werkzeug').setLevel(logging.WARN)
-#print("logging.level:")
-#print(logger.level)
 
 colors = {"Red":"#f44336", "Pink":"#e91e63", "Purple":"#9c27b0", "Deep purple":"#673ab7", "Indigo":"#3f51b5", "Blue":"#2196f3", "Light blue":"#03a9f4", "Cyan":"#00bcd4", "Teal":"#009688", "Green":"#4caf50", "Light green":"#8bc34a", "Lime":"#cddc39", "Yellow":"#ffeb3b", "Amber":"#ffc107", "Orange":"#ff9800", "Deep orange":"#ff5722", "Brown":"#795548", "Blue grey":"#607d8b", "Grey":"#9e9e9e", "White":"#ffffff"}
+
+
+
+
 @app.before_request
 def before_request():
     #print_threads()
@@ -485,6 +493,7 @@ def delete_settings():
 
 def init():
     threading.enumerate()[1].setName("MainFork")
+    pprint(Fore.CYAN+'Boot NMEA Multiplexer', " SYSTEM ", "INFO")
     if os.path.isfile(os.path.join(app.root_path, "lib", "settings", "_current.json")):
         settings.load()
         for s in settings.talkers:
@@ -514,6 +523,7 @@ def reboot():
     if os.path.isfile(os.path.join(app.root_path, "lib", "app.pid")):
         pid = open(os.path.join(app.root_path, "lib", "app.pid"),"r").read().strip()
         if re.match(r"^\d+$",pid):
+            pprint(Fore.YELLOW+'Restart signal caught', " SYSTEM ", "INFO")
             for talker in talkers:
                 talker.kill()
             for listener in listeners:

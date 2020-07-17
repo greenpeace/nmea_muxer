@@ -75,13 +75,14 @@ class Talker:
         self.alive = False
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
-        for client in self.clients:
-            client.shutdown(socket.SHUT_RDWR)
-            client.close()
-            self.clients.remove(client)
+        self.close_clients()
         if self.socket:
             try:
                 self.socket.shutdown(socket.SHUT_RDWR)
+            except:
+                pass
+            try:
+                self.socket.close()
             except:
                 pass
         if self.thread:
@@ -115,31 +116,36 @@ class Talker:
             sleep(1)
 
     def kill(self):
-        pprint('Closing             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
         self.status = "CLOSING"
         self.alive = False
         self.go_on = False
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
-        for client in self.clients:
-            client.shutdown(socket.SHUT_RDWR)
-            client.close()
-            self.clients.remove(client)
+        self.close_clients()
         if self.socket:
-            self.socket.shutdown(socket.SHUT_RDWR)
-            self.socket.close()
+            try:
+                self.socket.shutdown(socket.SHUT_RDWR)
+            except:
+                pass
+            try:
+                self.socket.close()
+                self.socket.wait_closed()
+            except:
+                pass
+            #except Exception as err:
+            #    pprint('EXCEPTION ({}): {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(19," "), self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "WARN")
         self.thread.join()
         if self.resilience_thread:
             self.resilience_thread.join()
+        while self.thread.is_alive() or (self.resilience_thread and self.resilience_thread.is_alive()):
+            sleep(0.1)
         self.status = "KILLED"
+        pprint('Closing             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
 
 
     def pause(self):
         if self.go_on:
-            for client in self.clients:
-                client.shutdown(socket.SHUT_RDWR)
-                client.close()
-                self.clients.remove(client)
+            self.close_clients()
             self.status = "PAUSED"
             self.go_on = False
             self.uptime += (dt.now() - self.started_at).total_seconds()
@@ -151,6 +157,18 @@ class Talker:
             self.go_on = True
             self.uptime += (dt.now() - self.started_at).total_seconds()
             pprint('Resuming            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
+
+    def close_clients(self):
+        for client in self.clients:
+            try:
+                client.shutdown(socket.SHUT_RDWR)
+            except:
+                pass
+            try:
+                client.close()
+            except:
+                pass
+            self.clients.remove(client)
 
     def emit(self,sentence,color,force=False):
         if self.verbose:
@@ -292,7 +310,7 @@ class Talker:
                         if client in self.clients:
                             self.clients.remove(client)
                 else:
-                    pprint('Closing           {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
+                    pprint('EXCEPTION         {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.YELLOW, self.name), " TALKER ", "ERROR")
 
 
             except Exception as err:
@@ -301,7 +319,7 @@ class Talker:
 
             if client:
                 if self.go_on:
-                    pprint('Incoming            {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
+                    pprint('Incoming {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO") # OOPS
                 else:
                     pprint('Rejecting           {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "DEBUG")
                     client.shutdown(socket.SHUT_RDWR)
