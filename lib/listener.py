@@ -81,9 +81,10 @@ class Listener:
             self.loop.stop()
             while self.loop.is_running():
                 sleep(0.1)
-            self.loop.close()
-            while not self.loop.is_closed():
-                sleep(0.1)
+            if self.loop:
+                self.loop.close()
+                while not self.loop.is_closed():
+                    sleep(0.1)
         self.loop = asyncio.new_event_loop()
         self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
         self.alive = True
@@ -123,9 +124,10 @@ class Listener:
             self.loop.stop()
             while self.loop.is_running():
                 sleep(0.1)
-            self.loop.close()
-            while not self.loop.is_closed():
-                sleep(0.1)
+            if self.loop:
+                self.loop.close()
+                while not self.loop.is_closed():
+                    sleep(0.1)
 
     def update(self):
         self.talker_ids = list(map(lambda s: s.id, self.talkers))
