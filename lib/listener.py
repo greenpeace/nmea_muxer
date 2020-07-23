@@ -47,15 +47,15 @@ class Listener:
             self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
             self.thread.start()
             self.thread_counter += 1
-            pprint('Starting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
+            pprint('Starting              {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         elif not self.status == "PAUSED":
             self.thread.join()
             self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
             self.thread.start()
             self.thread_counter += 1
-            pprint('Restarting          {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
+            pprint('Restarting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         else:
-            pprint('Resuming            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
+            pprint('Resuming              {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
 
         if not self.resilience_thread:
             self.resilience_thread = Thread(target=self.insist,name="Listener (resilience): "+self.name)
@@ -66,7 +66,7 @@ class Listener:
     def restart(self):
         self.started_at = dt.now()
         self.reader = None
-        pprint('Restarting          {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
+        pprint('Restarting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         if self.thread:
             resilient = self.resilient
             self.alive = False
@@ -150,12 +150,12 @@ class Listener:
                 self.reader, self.writer = await asyncio.open_connection(*self.listen_address)
             except ConnectionRefusedError:
                 self.status = "CONN RFSD"
-                pprint('{} {}:{}{}{} {}'.format(self.status.ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
+                pprint('{} {}:{}{}{} {}'.format(self.status.ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
                 self.go_on = False
                 self.alive = False
             except OSError:
                 self.status = "SOCK BUSY"
-                pprint('{} {}:{}{}{} {}'.format(self.status.ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
+                pprint('{} {}:{}{}{} {}'.format(self.status.ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "WARN")
                 self.go_on = False
                 self.alive = False
 
@@ -195,7 +195,7 @@ class Listener:
                             talker.emit(payload,self.color)
 
             except ConnectionResetError as err:
-                pprint('{} {}:{}{}{} {}'.format(str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
+                pprint('{} {}:{}{}{} {}'.format(str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
                 self.go_on = False
                 self.alive = False
                 if self.writer:
@@ -205,17 +205,17 @@ class Listener:
             except ValueError as err:
                 # Handle common AIS overflow silently
                 if str(err) in ["Separator is not found, and chunk exceed the limit","Separator is found, but chunk is longer than limit"]:
-                    pprint('{} {}:{}{}{} {}'.format(str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "DEBUG")
+                    pprint('{} {}:{}{}{} {}'.format(str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "DEBUG")
                 else:
-                    pprint('ValueError: {} {}:{}{}{} {}'.format(str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
+                    pprint('ValueError: {} {}:{}{}{} {}'.format(str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
 
             except Exception as err:
-                pprint('EXCEPTION ({}): {} {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
+                pprint('EXCEPTION ({}): {} {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
                 break
 
         if self.reader and self.reader._eof:
-            self.status = "BROKEN PIPE"
-            pprint('{} {}:{}{}{} {}'.format(str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
+            self.status = "BROKEN PIPE" 
+            pprint('{} {}:{}{}{} {}'.format(str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
 
         self.go_on = False
         self.alive = False
@@ -224,7 +224,7 @@ class Listener:
             try:
                 await self.writer.wait_closed()
             except Exception as err:
-                pprint('EXCEPTION ({}): {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(19," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "DEBUG")
+                pprint('EXCEPTION ({}): {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "DEBUG")
 
     def get_uptime(self):
         if self.go_on:

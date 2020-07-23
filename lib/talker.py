@@ -55,19 +55,19 @@ class Talker:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            pprint('Starting            {}:{}{} {}{}'.format(self.bind_address[0].rjust(15," "),Style.BRIGHT,str(self.bind_address[1]).ljust(5," "),Fore.CYAN,self.name), " TALKER ", "INFO")
+            pprint('Starting              {}:{}{} {}{}'.format(self.bind_address[0].rjust(15," "),Style.BRIGHT,str(self.bind_address[1]).ljust(5," "),Fore.CYAN,self.name), " TALKER ", "INFO")
             if not self.thread:
                 self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
                 self.thread.start()
         except Exception as err:
             if self.tries >= 0:
-                pprint('Retrying            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "DEBUG")
+                pprint('Retrying              {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "DEBUG")
                 sleep(1)
                 self.restart()
             else:
                 self.alive = False
                 self.go_on = False
-                pprint('Failed to start  {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "WARN")
+                pprint('Failed to start       {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "WARN")
                 pass
 
     def restart(self):
@@ -93,7 +93,7 @@ class Talker:
             self.socket.bind(self.bind_address)
             self.status = "UP"
             self.socket.listen()
-            pprint('Restarting        {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
+            pprint('Restarting            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
             self.alive = True
             self.go_on = True
             self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
@@ -140,7 +140,7 @@ class Talker:
         while self.thread.is_alive() or (self.resilience_thread and self.resilience_thread.is_alive()):
             sleep(0.1)
         self.status = "KILLED"
-        pprint('Closing             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
+        pprint('Closing               {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
 
 
     def pause(self):
@@ -149,14 +149,14 @@ class Talker:
             self.status = "PAUSED"
             self.go_on = False
             self.uptime += (dt.now() - self.started_at).total_seconds()
-            pprint('Pausing             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
+            pprint('Pausing               {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
 
     def resume(self):
         if not self.go_on:
             self.status = "UP"
             self.go_on = True
             self.uptime += (dt.now() - self.started_at).total_seconds()
-            pprint('Resuming            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
+            pprint('Resuming              {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
 
     def close_clients(self):
         for client in self.clients:
@@ -184,13 +184,13 @@ class Talker:
                         if client in self.clients:
                             self.clients.remove(client)
                     elif err.errno in [9,110]:
-                        pprint('Disconnecting       {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
+                        pprint('Disconnecting         {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                         client.shutdown(socket.SHUT_RDWR)
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
                     else:
-                        pprint('EXCEPTION {} {}:{}{}'.format(err,client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "ERROR")
+                        pprint('EXCEPTION             {} {}:{}{}'.format(err,client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "ERROR")
                         client.shutdown(socket.SHUT_RDWR)
                         client.close()
                         if client in self.clients:
@@ -299,7 +299,7 @@ class Talker:
                 #client.setblocking(False)
 
             except KeyboardInterrupt:
-                pprint("KeyboardInterrupt   {}:{}{}{} {} - closing client sockets".format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name)," TALKER ","INFO")
+                pprint("KeyboardInterrupt     {}:{}{}{} {} - closing client sockets".format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name)," TALKER ","INFO")
                 self.kill()
 
             except OSError as err:
@@ -310,18 +310,18 @@ class Talker:
                         if client in self.clients:
                             self.clients.remove(client)
                 else:
-                    pprint('EXCEPTION         {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.YELLOW, self.name), " TALKER ", "ERROR")
+                    pprint('EXCEPTION             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.YELLOW, self.name), " TALKER ", "ERROR")
 
 
             except Exception as err:
-                pprint('EXCEPTION         {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.YELLOW, self.name), " TALKER ", "ERROR")
+                pprint('EXCEPTION             {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.YELLOW, self.name), " TALKER ", "ERROR")
                 self.alive = False
 
             if client:
                 if self.go_on:
-                    pprint('Incoming {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO") # OOPS
+                    pprint('Incoming              {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO") # OOPS
                 else:
-                    pprint('Rejecting           {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "DEBUG")
+                    pprint('Rejecting             {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "DEBUG")
                     client.shutdown(socket.SHUT_RDWR)
                     client.close()
                     if client in self.clients:
