@@ -40,7 +40,8 @@
           </a>
           <ul class="right hide-on-med-and-down">
             <li class="pad" style="padding-top:0;"> 
-              <a class="pad right teal-text" onclick="edit_settings();" style="padding: 0; margin: -21px 0 0 8px;"><i class="material-icons">settings</i></a>
+              <a title="Settings" class="right teal-text" onclick="edit_settings();" style="padding: 0; margin: -20px 10px 0 8px;"><i class="material-icons">settings</i></a>
+              <a title="Show logs" class="right grey-text text-darken-2" onclick="show_logs();" style="padding: 0; margin: -20px -4px 0 8px;"><i class="material-icons">dvr</i></a>
 
               {% if g.clientCount == 0 %}
                 <span title="Clients: {{ g.clientCount }}" class="badge navitem red darken-4 white-text">C{{ g.clientCount }}</span>
@@ -125,6 +126,9 @@
               $('#settings').modal('open');
             }
           });
+        }
+
+        function show_logs() {
         }
 
         function threads() {
