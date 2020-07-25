@@ -11,7 +11,7 @@ from shutil         import copyfile
 
 import threading
 import netifaces
-import socket, json, re, os, resource, logging
+import socket, json, re, os, resource, logging, requests
 
 from lib.talker     import Talker
 from lib.listener   import Listener
@@ -556,6 +556,19 @@ def print_threads():
         init()
     print()
 
+def ignition(worker):
+    ign = threading.Thread(target=ignite)
+    for talker in talkers:
+        talker.kill()
+    for listener in listeners:
+        listener.kill()
+    sleep(1)
+    ign.start()
+
+def ignite():
+    #os.system("curl http://"+os.environ['NMEA_BIND_ADDRESS']+" &> /dev/null")
+    requests.get("http://"+os.environ['NMEA_BIND_ADDRESS'])
+    return
 
 
 if __name__ == '__main__':

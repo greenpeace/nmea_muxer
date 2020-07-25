@@ -110,6 +110,11 @@
           $('#threads').modal();
           $('#settings').modal();
           window.setTimeout(logoGreen,100);
+          $('.modal').modal({
+            'onCloseEnd': function(){
+              window.location.reload();
+            }
+          });
         });
         function logoGreen (){ 
           $(".brand-logo i").css("color","#009688");
