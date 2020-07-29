@@ -146,19 +146,41 @@ span.badge.inline {
   margin: 12px 14px 0 0;
 }
 
-#feed {
+#feed, #logs {
   background-color: black;
   color: white;
+  padding-top: 0;
+  top: 64px !important;
+  height: calc( 100vh - 128px ) !important;
+  max-height: none !important;
+}
+#feed .rel {
+  position: relative;
+  height: calc( 100vh - 172px ) !important;
+}
+#logs .rel {
+  position: relative;
+  height: calc( 100vh - 196px ) !important;
+}
+#feed .feed,
+#logs .feed {
+  position: absolute;
+  top: 120px;
+  bottom:0;
+  left:0;
+  right:0;
+  margin: 16px -35px -45px 0;
+  overflow: hidden auto;
+  font-size: 12px;
+  width: calc( 100% + 24px );
+  height: calc( 100% - 92px );
 }
 
 #feed .feed {
-  height: calc( 100vh - 155px ) !important;
-  max-height: calc( 100vh - 116px ) !important;
-  margin: 16px -35px -45px 0;
-  padding-bottom: 24px;
-  overflow: hidden auto;
-  font-size: 11px;
+  margin: -16px -35px -45px 0;
+  height: calc( 100% - 60px );
 }
+
 
 #loading {
   display: none;

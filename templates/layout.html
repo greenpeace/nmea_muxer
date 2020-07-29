@@ -26,8 +26,29 @@
 				</div>
 			</div>
     </div>
+    <div id="logs" class="modal"> </div>
     <div id="threads" class="modal"> </div>
     <div id="settings" class="modal" style="max-height:92%; min-width: 400px; width: 35%;"> </div>
+    <div id="talkers" class="modal" style="max-height:92%"> </div>
+    <div id="listener" class="modal" style="max-height:92%;width:92%"> </div>
+    <div id="reorder" class="modal" style="width:360px"> </div>
+    <div id="feed" class="modal"> </div>
+    <div id="clients" class="modal">
+      <div class="modal-content">
+        <div class="clearfix">
+          <h5 class="card-title left nopad">Clients on <b></b>:</h5>
+          <a onclick="$('#clients').modal('close');" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+        </div>
+        <br/>
+        <div class="progress">
+          <div class="indeterminate"></div>
+        </div>
+        <div class="data"> </div>
+        <br/>
+        <br/>
+      </div>
+    </div>
+
     <header>
       <nav class="black" role="navigation">
         <div class="nav-wrapper container">
@@ -41,7 +62,7 @@
           <ul class="right hide-on-med-and-down">
             <li class="pad" style="padding-top:0;"> 
               <a title="Settings" class="right teal-text" onclick="edit_settings();" style="padding: 0; margin: -20px 10px 0 8px;"><i class="material-icons">settings</i></a>
-              <a title="Show logs" class="right grey-text text-darken-2" onclick="show_logs();" style="padding: 0; margin: -20px -4px 0 8px;"><i class="material-icons">dvr</i></a>
+              <a title="Show logs" class="right teal-text" onclick="show_logs();" style="padding: 0; margin: -20px -4px 0 8px;"><i class="material-icons">dvr</i></a>
 
               {% if g.clientCount == 0 %}
                 <span title="Clients: {{ g.clientCount }}" class="badge navitem red darken-4 white-text">C{{ g.clientCount }}</span>
@@ -101,15 +122,19 @@
     <script src="/static/js/jquery-ui.js"></script>
     <script src="/static/js/materialize.min.js"></script>
     <script src="/static/js/socket.io.js"></script>
+    <script src="/static/js/ansi_up.js"></script>
     <script src="/static/js/init.js"></script>
     {% block body_end %}
     {% endblock %}
 
       <script>
+        var ansi;
         $(document).ready(function(){ 
+          $('#logs').modal();
           $('#threads').modal();
           $('#settings').modal();
           window.setTimeout(logoGreen,100);
+          ansi = new AnsiUp;
           $('.modal').modal({
             'onCloseEnd': function(){
               window.location.reload();
@@ -134,6 +159,12 @@
         }
 
         function show_logs() {
+          $.get("/logs",function(data){
+            if (data.length > 0) {
+              $('#logs').html(data);
+              $('#logs').modal('open');
+            }
+          });
         }
 
         function threads() {

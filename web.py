@@ -431,6 +431,12 @@ def threads():
     return render_template("threads.html")
 
 
+@app.route("/logs",methods=["GET"])
+def logs():
+    g.logs = open("./log/nmea_muxer.log","r").read()
+    return render_template("logs.html")
+
+
 
 @app.route("/register")
 def register():

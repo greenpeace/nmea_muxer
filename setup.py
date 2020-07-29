@@ -11,6 +11,7 @@ setup(
 	'flask_socketio',
 	'netifaces',
         'gunicorn',
+        'requests',
         'colorama'
     ],
 )

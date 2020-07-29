@@ -125,7 +125,10 @@ class Listener:
             while self.loop.is_running():
                 sleep(0.1)
             if self.loop:
-                self.loop.close()
+                try:
+                    self.loop.close()
+                except:
+                    pass
                 while not self.loop.is_closed():
                     sleep(0.1)
 
@@ -208,6 +211,10 @@ class Listener:
                     pprint('{} {}:{}{}{} {}'.format(str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "DEBUG")
                 else:
                     pprint('ValueError: {} {}:{}{}{} {}'.format(str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
+
+            except TimeoutError as err:
+                pprint('{}: {} {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "WARN")
+                break
 
             except Exception as err:
                 pprint('EXCEPTION ({}): {} {}:{}{}{} {}'.format(type(err).__name__,str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.MAGENTA, self.name), "LISTENER", "ERROR")
