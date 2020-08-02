@@ -2,9 +2,10 @@ import os, json
 
 class Settings:
 
-    def __init__(self,app=None,period=0,talkers=[],listeners=[]):
+    def __init__(self,app=None,period=1,client_treshold=5,talkers=[],listeners=[]):
         self.app = app
         self.period = period
+        self.client_treshold = client_treshold
         self.talkers = talkers
         self.listeners = listeners
 
@@ -14,6 +15,7 @@ class Settings:
     def export(self):
         sts = {"settings":{}}
         sts["settings"]["period"] = self.period
+        sts["settings"]["client_treshold"] = self.client_treshold
         sts["talkers"] = self.talkers
         sts["listeners"] = self.listeners
         return sts

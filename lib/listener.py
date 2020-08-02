@@ -7,7 +7,7 @@ import os, re, asyncio, random, string
 from .utils import *
 
 class Listener:
-    def __init__(self,listen_address,lid="",name="",talkers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False,timeout=10):
+    def __init__(self,listen_address,lid="",name="",talkers=[],msg_setup={},throttle=0,color="#FFFFFF",accumulate_sentences=False,resilient=False,timeout=10,restart_period=1):
         self.id = lid if len(lid) > 0 else ''.join(random.choices(string.ascii_uppercase+string.digits,k=8))
         self.listen_address = listen_address
         self.name = name
@@ -19,6 +19,7 @@ class Listener:
         self.accumulate_sentences = accumulate_sentences
         self.resilient = resilient
         self.timeout = timeout
+        self.restart_period = min(1,restart_period)
 
         self.status = "INIT"
         self.msg_count = {}
@@ -101,14 +102,14 @@ class Listener:
         while self.resilience_alive:
             if self.resilient and not self.alive:
                 self.restart()
-            sleep(1)
+            sleep(self.restart_period)
 
 
     def pause(self):
         self.status = "PAUSED"
         self.go_on = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
-        pprint('Pausing             {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
+        pprint('Pausing               {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
 
     def kill(self):
         self.status = "KILLED"
@@ -116,6 +117,7 @@ class Listener:
         self.go_on = False
         self.resilience_alive = False
         self.uptime += (dt.now() - self.started_at).total_seconds()
+        pprint('Closing               {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         self.thread.join()
         self.resilience_thread.join()
         while self.thread.is_alive():
@@ -222,7 +224,7 @@ class Listener:
 
         if self.reader and self.reader._eof:
             self.status = "BROKEN PIPE" 
-            pprint('{} {}:{}{}{} {}'.format(str(err).ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
+            pprint('{} {}:{}{}{} {}'.format("BROKEN PIPE".ljust(21," "), self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "ERROR")
 
         self.go_on = False
         self.alive = False

@@ -1,30 +1,61 @@
 
 
     <style>
-      .settings button { min-width: 200px; }
-      .settings label { color: #666; }
     </style>
 
     <div class="modal-content">
       <div class="row">
         <div class="col s12 settings">
-          <div class="right pad-10"></div>
           <h5 class="card-title left">System settings</h5>
-          <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
-          <form method="post" action="/save_settings" id="save">
-            <div class="row">
-              <div class="col s12">
-                <h6 class="card-title">Save settings</h6>
+          <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal nomarg"><i class="material-icons" style="font-size: 42px">check</i></button>
+          <div class="right pad-10"></div>
+          <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey" title="Close dialog"><i class="material-icons" style="font-size: 28px">close</i></a>
+          <a id="reboot" class="btn-pad right btn-floating waves-effect waves-light red darken-4" title="Reboot application"><i class="material-icons left">replay</i></a>
+
+          <br/>
+          <br/>
+          <br/>
+          <br/>
+          <form id="set" action="/set" method="post">
+            <div class="row nomarg larger">
+              <div class="col s10">
+                <span class="inline-input">
+                  Maximum connections per client
+                  <i class="material-icons tiny grey-text" title="The application will reboot in case this treshold is passed. &#013;0 (or 1) for unlimited.">help_outline</i>
+                </span>
+              </div>
+              <div class="input-field col s2 nomarg">
+                <input name="client_treshold" class="center-text" value="{{ g.ct }}" type="number"/>
+              </div>
+            </div>
+            <div class="row nomarg larger">
+              <div class="col s10">
+                <span class="inline-input">
+                  Listener refresh period
+                  <i class="material-icons tiny grey-text" title="Number of seconds for the listener to refresh failed initiation.">help_outline</i>
+                </span>
+              </div>
+              <div class="input-field col s2 nomarg">
+                <input name="period" class="center-text" value="{{ g.period }}" type="number"/>
+              </div>
+            </div>
+            <br/>
+            <hr class="nomarg"/>
+            <br/>
+          </form>
+
+          <div class="row">
+            <form method="post" action="/save_settings" id="save">
+              <div class="col m6">
+                <h6 class="card-title">Save settings to file</h6>
                 <input name="savefile" type="text" placeholder="File Name" required />
                 <br/>
                 <button type="submit" class="btn teal"><i class="material-icons left">save</i>SAVE</button>
               </div>
-            </div>
-          </form>
-          {% if g.toload %}
-            <div class="row">
-              <div class="col s12">
-                <h6 class="card-title">Load settings</h6>
+            </form>
+            {% if g.toload %}
+              <div class="col m6">
+                <h6 class="card-title">Apply settings from file</h6>
                 <form method="post" action="/load_settings" id="load">
                   {% for f in g.saveds %}
                     <label>
@@ -34,21 +65,13 @@
                     <br/>
                   {% endfor %}
                   <br/>
-                  <button type="submit" class="btn teal"><i class="material-icons left">folder_open</i>LOAD SELECTED</button>
+                  <button type="submit" class="btn teal"><i class="material-icons left">folder_open</i>APPLY SELECTED</button>
                 </form>
-                <button class="btn grey" id="delete"><i class="material-icons left">delete</i>DELETE SELECTED</button>
+                <!--<button class="btn grey" id="download"><i class="material-icons left">delete</i>DOWNLOAD SELECTED</button>-->
+                <button class="btn red darken-4" id="delete"><i class="material-icons left">delete</i>DELETE SELECTED</button>
               </div>
-            </div>
-          {% endif %}
-          <form method="post" action="/reboot" id="reboot">
-            <div class="row">
-              <div class="col s12">
-                <hr/>
-                <br/>
-                <button type="submit" class="btn red darken-4"><i class="material-icons left">replay</i>RESTART SERVICE</button>
-              </div>
-            </div>
-          </form>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
@@ -74,10 +97,12 @@
         }
       })
     })
-    $("#reboot").on("submit",function(e){
+    $("#reboot").on("click",function(e){
+      console.log("reboot")
       e.preventDefault();
       $("#loading").fadeIn(500)
       $.post("/reboot",{},function(data){
+        console.log(data)
         if (data == "ack") {
           $.get("/");
           setTimeout(function(){window.location = "/"},1200)

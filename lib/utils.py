@@ -60,7 +60,7 @@ def pprint(msg,sender=" SYSTEM ",severity="INFO"):
         "ERROR"     : Fore.RED
         }
 
-    log = Fore.BLACK+Style.BRIGHT + dt.now().strftime("%y%m%d")+Fore.MAGENTA+Style.DIM + dt.now().strftime("%H%M%S")+" "+sev_times.get(severity) + severity[0]+ " "+Style.RESET_ALL+sen_colors.get(sender)+sender.ljust(8," ")+" "+sev_colors.get(severity)+msg+Style.RESET_ALL
+    log = Fore.BLACK+Style.BRIGHT+dt.now().strftime("%y%m%d")+Style.RESET_ALL+Style.DIM+Fore.MAGENTA + dt.now().strftime("%H%M%S")+" "+sev_times.get(severity) + severity[0]+ " "+Style.RESET_ALL+sen_colors.get(sender)+sender.ljust(8," ")+" "+sev_colors.get(severity)+msg+Style.RESET_ALL
     if severity == "DEBUG":
         logging.debug(log)
     elif severity == "INFO":

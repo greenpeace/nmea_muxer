@@ -7,7 +7,7 @@ import re, socket, random
 class Talker:
 
 
-    def __init__(self,bind_address,iface="",name="",throttle=False,listeners=[],pusher=None,verbose=False):
+    def __init__(self,bind_address,iface="",name="",throttle=False,listeners=[],pusher=None,verbose=False,client_treshold=5):
 
         self.bind_address = bind_address
         self.name = name
@@ -19,6 +19,7 @@ class Talker:
         self.verbose = verbose
         self.listeners = listeners
         self.pusher = pusher
+        self.client_treshold = client_treshold
 
         self.thread = None
         self.thread_counter = 0
@@ -320,7 +321,11 @@ class Talker:
 
             if client:
                 if self.go_on:
-                    pprint('Incoming              {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO") # OOPS
+                    numconns = 0
+                    for cli in self.clients:
+                        if cli.getpeername == client.getpeername:
+                            numconns += 1
+                    pprint('Incoming              {}:{}{} {}({})'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," "), Fore.GREEN, numconns), " CLIENT ", "INFO") # OOPS
                 else:
                     pprint('Rejecting             {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "DEBUG")
                     client.shutdown(socket.SHUT_RDWR)

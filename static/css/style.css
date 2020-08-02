@@ -35,6 +35,14 @@ a {cursor: pointer;}
 
 .bold { font-weight: bold; }
 .large-text { font-size: 16px; }
+.center-text { text-align: center; }
+
+.nomarg { margin: 0 !important; }
+
+.row.larger {
+  margin-left: -0.75rem !important; 
+  margin-right: -0.75rem !important; 
+}
 
 .btn-pad { margin: 8px; }
 .pad { padding: 15px; }
@@ -196,3 +204,16 @@ span.badge.inline {
   margin-top: calc( 50vh - 32px );
   margin-left: calc( 50vw - 32px );
 }
+
+span.inline-input  {
+  padding: 10px 0;
+  font-size: 1.15rem;
+  display: block;
+}
+
+span.inline-input i {
+  cursor: help;
+}
+
+.settings button { width: 100%; margin: 8px 0 0; }
+.settings label { color: #666; }

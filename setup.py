@@ -12,6 +12,7 @@ setup(
 	'netifaces',
         'gunicorn',
         'requests',
-        'colorama'
+        'colorama',
+        'tailer'
     ],
 )

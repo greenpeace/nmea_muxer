@@ -8,6 +8,7 @@ from time           import sleep
 from datetime       import datetime as dt
 from colorama       import Fore, Back, Style
 from shutil         import copyfile
+from tailer         import tail
 
 import threading
 import netifaces
@@ -433,7 +434,7 @@ def threads():
 
 @app.route("/logs",methods=["GET"])
 def logs():
-    g.logs = open("./log/nmea_muxer.log","r").read()
+    g.logs = "\n".join(tail(open("./log/nmea_muxer.log"),512))
     return render_template("logs.html")
 
 
@@ -463,6 +464,8 @@ def reboot_request():
 @app.route("/settings",methods=["GET"])
 def edit_settings():
     g.listeners = listeners
+    g.ct = settings.client_treshold
+    g.period = settings.period
     g.saveds = []
     for (_,_, files) in os.walk(os.path.join(app.root_path, "lib", "settings")):
         for f in files:
@@ -509,7 +512,7 @@ def init():
     if os.path.isfile(os.path.join(app.root_path, "lib", "settings", "_current.json")):
         settings.load()
         for s in settings.talkers:
-            talker = Talker(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher)
+            talker = Talker(tuple(s['bind_address']),s['iface'],s['name'],s['throttle'],[],pusher,False,settings.client_treshold)
             talkers.append(talker)
             talker.start()
         for l in settings.listeners:
@@ -521,7 +524,7 @@ def init():
             accumulate = False if not 'accumulate_sentences' in l.keys() else l['accumulate_sentences']
             resilient = False if not 'resilient' in l.keys() else l['resilient']
             timeout = 10 if not 'timeout' in l.keys() else int(l['timeout'])
-            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate,resilient,timeout)
+            listener = Listener(l['listen_address'],l['id'],l['name'],ss,l['msg_setup'],l['throttle'],color,accumulate,resilient,timeout,settings.period)
             listeners.append(listener)
             listener.start()
             if not 'go_on' in l.keys() or l['go_on'] == False:
@@ -535,12 +538,13 @@ def reboot():
     if os.path.isfile(os.path.join(app.root_path, "lib", "app.pid")):
         pid = open(os.path.join(app.root_path, "lib", "app.pid"),"r").read().strip()
         if re.match(r"^\d+$",pid):
-            pprint(Fore.YELLOW+'Restart signal caught', " SYSTEM ", "INFO")
+            pprint(Fore.MAGENTA+'Reboot initiated, closing sockets', " SYSTEM ", "INFO")
             for talker in talkers:
                 talker.kill()
             for listener in listeners:
                 listener.kill()
             os.system("kill -HUP {}".format(pid))
+            pprint(Fore.RED+'Signaling worker restart', " SYSTEM ", "INFO")
             return True
         else:
             return False
