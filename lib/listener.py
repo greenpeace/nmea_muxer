@@ -27,7 +27,7 @@ class Listener:
         self.msg_queue = {}
         self.loop = asyncio.new_event_loop()
         self.thread = None
-        self.thread_counter = 0
+        self.roadkills = 0
         self.resilience_thread = None
         self.resilience_alive = True
         self.reader = None
@@ -45,15 +45,15 @@ class Listener:
 
 
         if not self.thread:
-            self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
+            self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.roadkills))
             self.thread.start()
-            self.thread_counter += 1
+            self.roadkills += 1
             pprint('Starting              {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         elif not self.status == "PAUSED":
-            self.thread.join()
-            self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
+            self.thread.join() # move this up out of the block to clean up a little
+            self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.roadkills))
             self.thread.start()
-            self.thread_counter += 1
+            self.roadkills += 1
             pprint('Restarting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
         else:
             pprint('Resuming              {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
@@ -74,7 +74,7 @@ class Listener:
             self.go_on = False
             self.resilient = False
             self.thread.join()
-            self.thread_counter += 1
+            self.roadkills += 1
             while self.thread.is_alive():
                 sleep(0.1)
             self.resilient = resilient
@@ -87,7 +87,7 @@ class Listener:
                 while not self.loop.is_closed():
                     sleep(0.1)
         self.loop = asyncio.new_event_loop()
-        self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.thread_counter))
+        self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.roadkills))
         self.alive = True
         self.go_on = True
         self.thread.start()

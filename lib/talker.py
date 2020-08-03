@@ -22,7 +22,7 @@ class Talker:
         self.client_treshold = client_treshold
 
         self.thread = None
-        self.thread_counter = 0
+        self.roadkills = 0
         self.alive = True
         self.go_on = True
         self.push = False
@@ -31,7 +31,7 @@ class Talker:
         self.resilience_alive = True
 
         self.throttle_thread = None
-        self.throttle_thread_counter = 0
+        self.throttle_roadkills = 0
         self.throttle_steps={}
         self.throttling = False
         self.throttle_step = 0
@@ -58,7 +58,7 @@ class Talker:
             self.socket.listen()
             pprint('Starting              {}:{}{} {}{}'.format(self.bind_address[0].rjust(15," "),Style.BRIGHT,str(self.bind_address[1]).ljust(5," "),Fore.CYAN,self.name), " TALKER ", "INFO")
             if not self.thread:
-                self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
+                self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.roadkills))
                 self.thread.start()
         except Exception as err:
             if self.tries >= 0:
@@ -97,7 +97,7 @@ class Talker:
             pprint('Restarting            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
             self.alive = True
             self.go_on = True
-            self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.thread_counter))
+            self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.roadkills))
             self.thread.start()
         except Exception as err:
             self.alive = False
@@ -240,15 +240,15 @@ class Talker:
             return False
         else:
             if not self.throttle_thread:
-                self.throttle_thread = Thread(target=self.process_throttle,name="Talker (throttle): "+self.name+" "+str(self.throttle_thread_counter))
+                self.throttle_thread = Thread(target=self.process_throttle,name="Talker (throttle): "+self.name+" "+str(self.throttle_roadkills))
                 self.throttle_thread.start()
-                self.throttle_thread_counter += 1
+                self.throttle_roadkills += 1
             else:
                 self.throttling = True
                 self.throttle_thread.join()
-                self.throttle_thread = Thread(target=self.process_throttle,name="Talker (throttle): "+self.name+" "+str(self.throttle_thread_counter))
+                self.throttle_thread = Thread(target=self.process_throttle,name="Talker (throttle): "+self.name+" "+str(self.throttle_roadkills))
                 self.throttle_thread.start()
-                self.throttle_thread_counter += 1
+                self.throttle_roadkills += 1
 
     def rerun_throttle(self):
         self.update_throttle()
