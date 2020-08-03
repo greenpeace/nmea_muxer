@@ -325,7 +325,7 @@ class Talker:
                     for cli in self.clients:
                         if cli.getpeername == client.getpeername:
                             numconns += 1
-                    pprint('Incoming              {}:{}{} {}({})'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," "), Fore.GREEN, numconns), " CLIENT ", "INFO") # OOPS
+                    pprint('Incoming              {}:{}{} {}({})'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[0]).ljust(5," "), Fore.GREEN, numconns), " CLIENT ", "INFO") # OOPS
                 else:
                     pprint('Rejecting             {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "DEBUG")
                     client.shutdown(socket.SHUT_RDWR)

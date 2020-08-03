@@ -544,7 +544,7 @@ def reboot():
             for listener in listeners:
                 listener.kill()
             os.system("kill -HUP {}".format(pid))
-            pprint(Fore.RED+'Signaling worker restart', " SYSTEM ", "INFO")
+            pprint(Fore.MAGENTA+'Signaling worker restart', " SYSTEM ", "INFO")
             return True
         else:
             return False
