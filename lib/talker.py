@@ -2,7 +2,7 @@ from threading import Thread
 from time      import sleep
 from datetime  import datetime as dt
 from .utils    import *
-import re, socket, random
+import os, re, socket, random, requests
 
 class Talker:
 
@@ -19,13 +19,15 @@ class Talker:
         self.verbose = verbose
         self.listeners = listeners
         self.pusher = pusher
-        self.client_treshold = client_treshold
+        self.client_treshold = int(client_treshold)
 
         self.thread = None
         self.roadkills = 0
         self.alive = True
         self.go_on = True
         self.push = False
+
+        self.reboot_thread = None
 
         self.resilience_thread = None
         self.resilience_alive = True
@@ -44,6 +46,7 @@ class Talker:
         self.uptime = 0
         self.started_at = dt.now()
         self.tries = 3
+        self.cip = None
 
         self.for_export = ["bind_address","name","iface","throttle"]
 
@@ -322,10 +325,16 @@ class Talker:
             if client:
                 if self.go_on:
                     numconns = 0
+                    cip = client.getpeername()[0]
                     for cli in self.clients:
-                        if cli.getpeername == client.getpeername:
+                        if cli.getpeername()[0] == cip:
                             numconns += 1
-                    pprint('Incoming              {}:{}{} {}({})'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[0]).ljust(5," "), Fore.GREEN, numconns), " CLIENT ", "INFO") # OOPS
+                    if (numconns >= self.client_treshold):
+                        self.cip = cip
+                        self.reboot_thread = Thread(target=self.reboot,name="Talker (reboot): "+self.name)
+                        self.reboot_thread.start()
+                    else:
+                        pprint('Incoming              {}:{}{} {}({})'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," "), Fore.GREEN, numconns), " CLIENT ", "INFO")
                 else:
                     pprint('Rejecting             {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "DEBUG")
                     client.shutdown(socket.SHUT_RDWR)
@@ -333,6 +342,9 @@ class Talker:
                     if client in self.clients:
                         self.clients.remove(client)
 
+
+    def reboot(self):
+        requests.post("http://"+os.environ['NMEA_BIND_ADDRESS']+"/reboot", data = {"message":"Restart initiated due to connection treshold {}({}){} on client {}{}".format(Fore.GREEN,self.client_treshold,Style.RESET_ALL+Fore.MAGENTA,Style.BRIGHT,self.cip)})
 
     def get_uptime(self):
         if self.alive:

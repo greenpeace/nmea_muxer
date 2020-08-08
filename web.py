@@ -459,8 +459,7 @@ def register():
 @app.route("/reboot",methods=["POST"])
 def reboot_request():
     if request.method == 'POST':
-        rebooted = reboot()
-        #sleep(1)
+        rebooted = reboot(request.form['message'])
         return {True:"ack", False:"nack"}[rebooted]
 
 
@@ -479,6 +478,14 @@ def edit_settings():
                 g.saveds.append([f[0:-5],os.path.getmtime(os.path.join(app.root_path, "lib", "settings",f))])
                 g.toload = len(g.saveds) > 0
     return render_template("settings.html")
+
+@app.route("/set",methods=["POST"])
+def set_settings():
+    if request.method == 'POST':
+        settings.period = request.form['period']
+        settings.client_treshold = request.form['client_treshold']
+        settings.save(talkers,listeners)
+    return "ack"
 
 
 @app.route("/save_settings",methods=["POST"])
@@ -540,11 +547,11 @@ def init():
             if talker.throttle:
                 talker.run_throttle();
 
-def reboot():
+def reboot(msg='Reboot initiated, closing sockets'):
     if os.path.isfile(os.path.join(app.root_path, "lib", "app.pid")):
         pid = open(os.path.join(app.root_path, "lib", "app.pid"),"r").read().strip()
         if re.match(r"^\d+$",pid):
-            pprint(Fore.MAGENTA+'Reboot initiated, closing sockets', " SYSTEM ", "INFO")
+            pprint(Fore.MAGENTA+msg, " SYSTEM ", "INFO")
             for talker in talkers:
                 talker.kill()
             for listener in listeners:

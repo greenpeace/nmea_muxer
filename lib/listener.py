@@ -19,7 +19,7 @@ class Listener:
         self.accumulate_sentences = accumulate_sentences
         self.resilient = resilient
         self.timeout = timeout
-        self.restart_period = min(1,restart_period)
+        self.restart_period = min(1,int(restart_period))
 
         self.status = "INIT"
         self.msg_count = {}
@@ -65,38 +65,39 @@ class Listener:
         self.status = "INIT"
 
     def restart(self):
-        self.started_at = dt.now()
-        self.reader = None
-        pprint('Restarting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
-        if self.thread:
-            resilient = self.resilient
-            self.alive = False
-            self.go_on = False
-            self.resilient = False
-            self.thread.join()
-            self.roadkills += 1
-            while self.thread.is_alive():
-                sleep(0.1)
-            self.resilient = resilient
-        if self.loop:
-            self.loop.stop()
-            while self.loop.is_running():
-                sleep(0.1)
-            if self.loop:
-                self.loop.close()
-                while not self.loop.is_closed():
+        if not self.status == "PAUSED":
+            self.started_at = dt.now()
+            self.reader = None
+            pprint('Restarting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
+            if self.thread:
+                resilient = self.resilient
+                self.alive = False
+                self.go_on = False
+                self.resilient = False
+                self.thread.join()
+                self.roadkills += 1
+                while self.thread.is_alive():
                     sleep(0.1)
-        self.loop = asyncio.new_event_loop()
-        self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.roadkills))
-        self.alive = True
-        self.go_on = True
-        self.thread.start()
+                self.resilient = resilient
+            if self.loop:
+                self.loop.stop()
+                while self.loop.is_running():
+                    sleep(0.1)
+                if self.loop:
+                    self.loop.close()
+                    while not self.loop.is_closed():
+                        sleep(0.1)
+            self.loop = asyncio.new_event_loop()
+            self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.roadkills))
+            self.alive = True
+            self.go_on = True
+            self.thread.start()
 
-        if not self.resilience_thread:
-            self.resilience_thread = Thread(target=self.insist,name="Listener (resilience): "+self.name)
-            self.resilience_thread.start()
+            if not self.resilience_thread:
+                self.resilience_thread = Thread(target=self.insist,name="Listener (resilience): "+self.name)
+                self.resilience_thread.start()
 
-        self.status = "INIT"
+            self.status = "INIT"
 
     def insist(self):
         while self.resilience_alive:

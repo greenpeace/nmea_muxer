@@ -7,7 +7,7 @@
       <div class="row">
         <div class="col s12 settings">
           <h5 class="card-title left">System settings</h5>
-          <button type="submit" class="right btn-floating btn-large waves-effect waves-light teal nomarg"><i class="material-icons" style="font-size: 42px">check</i></button>
+          <button type="submit" id="apply" class="right btn-floating btn-large waves-effect waves-light teal nomarg"><i class="material-icons" style="font-size: 42px">check</i></button>
           <div class="right pad-10"></div>
           <a href="/" class="btn-pad right btn-floating waves-effect waves-light blue-grey" title="Close dialog"><i class="material-icons" style="font-size: 28px">close</i></a>
           <a id="reboot" class="btn-pad right btn-floating waves-effect waves-light red darken-4" title="Reboot application"><i class="material-icons left">replay</i></a>
@@ -65,7 +65,7 @@
                     <br/>
                   {% endfor %}
                   <br/>
-                  <button id="apply" disabled type="submit" class="btn teal"><i class="material-icons left">folder_open</i>APPLY SELECTED</button>
+                  <button id="load_settings" disabled type="submit" class="btn teal"><i class="material-icons left">folder_open</i>APPLY SELECTED</button>
                 </form>
                 <!--<button class="btn grey" id="download"><i class="material-icons left">delete</i>DOWNLOAD SELECTED</button>-->
                 <button class="btn red darken-4" disabled id="delete"><i class="material-icons left">delete</i>DELETE SELECTED</button>
@@ -78,8 +78,18 @@
 
   <script>
     $("input[name=loadfile]").on("change",function(){
-      $("#apply").prop("disabled",false)
+      $("#load_settings").prop("disabled",false)
       $("#delete").prop("disabled",false)
+    })
+    $("#apply").on("click",function(e){
+      e.preventDefault();
+      $.post("/set",$("#set").serializeArray(),function(data){
+        console.log(data);
+        if (data == "ack") {
+          $.get("/");
+          setTimeout(function(){window.location = "/"},1200)
+        }
+      })
     })
     $("#load").on("submit",function(e){
       e.preventDefault();
