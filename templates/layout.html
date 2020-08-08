@@ -136,14 +136,22 @@
           window.setTimeout(logoGreen,100);
           ansi = new AnsiUp;
           $('.modal').modal({
+            'onCloseStart': function(){
+              closeSocket();
+            },
             'onCloseEnd': function(){
               window.location.reload();
             }
           });
+          $(window).on("unload",function(){
+            closeSocket();
+          })
         });
         function logoGreen (){ 
           $(".brand-logo i").css("color","#009688");
           window.setTimeout(logoWhite,100);
+        }
+        function closeSocket (){ 
         }
         function logoWhite (){ 
           $(".brand-logo i").css("color","#FFFFFF");

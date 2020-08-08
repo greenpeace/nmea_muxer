@@ -65,10 +65,10 @@
                     <br/>
                   {% endfor %}
                   <br/>
-                  <button type="submit" class="btn teal"><i class="material-icons left">folder_open</i>APPLY SELECTED</button>
+                  <button id="apply" disabled type="submit" class="btn teal"><i class="material-icons left">folder_open</i>APPLY SELECTED</button>
                 </form>
                 <!--<button class="btn grey" id="download"><i class="material-icons left">delete</i>DOWNLOAD SELECTED</button>-->
-                <button class="btn red darken-4" id="delete"><i class="material-icons left">delete</i>DELETE SELECTED</button>
+                <button class="btn red darken-4" disabled id="delete"><i class="material-icons left">delete</i>DELETE SELECTED</button>
               </div>
             {% endif %}
           </div>
@@ -77,6 +77,10 @@
     </div>
 
   <script>
+    $("input[name=loadfile]").on("change",function(){
+      $("#apply").prop("disabled",false)
+      $("#delete").prop("disabled",false)
+    })
     $("#load").on("submit",function(e){
       e.preventDefault();
       $("#loading").fadeIn(500)

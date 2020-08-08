@@ -139,7 +139,7 @@ class Talker:
             self.thread.join()
         if self.resilience_thread:
             self.resilience_thread.join()
-        while self.thread.is_alive() or (self.resilience_thread and self.resilience_thread.is_alive()):
+        while (self.thread and self.thread.is_alive()) or (self.resilience_thread and self.resilience_thread.is_alive()):
             sleep(0.1)
         self.status = "KILLED"
         pprint('Closing               {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")

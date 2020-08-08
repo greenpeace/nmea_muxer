@@ -435,7 +435,13 @@ def threads():
 @app.route("/logs",methods=["GET"])
 def logs():
     g.logs = "\n".join(tail(open("./log/nmea_muxer.log"),512))
+    pusher.logs()
     return render_template("logs.html")
+
+@app.route("/nologs")
+def nologs():
+    pusher.nologs()
+    return ""
 
 
 

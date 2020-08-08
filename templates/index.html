@@ -176,6 +176,11 @@
           window.location.reload();
         }
       })
+      $(window).focus(function(){
+        if($(".modal:visible").length==0){
+          window.location.reload();
+        }
+      })
     });
 
     function edit_talkers() {

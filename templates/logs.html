@@ -5,7 +5,7 @@
     <div class="col s12 rel">
       <div class="clearfix">
         <h5 class="card-title left nopad">Application logs</h5>
-        <a class="modal-close btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
+        <a onclick="closeSocket()" class="modal-close btn-pad right btn-floating waves-effect waves-light blue-grey"><i class="material-icons" style="font-size: 28px">close</i></a>
       </div>
       <code id="logs_p" class="feed">
         {{ g.logs }}
@@ -16,6 +16,22 @@
         txt = txt.replace(/\n/g,"<br/>")
         //txt = txt.replace(/\s/g,"&nbsp;")
         $("#logs_p").html(txt)
+        $("#logs_p")[0].scrollTop = $("#logs_p")[0].scrollHeight;
+
+        socket = io("/livelogs");
+        socket.on('logline', function(data) {
+          $('#logs_p').append(ansi.ansi_to_html(data.line)+"<br/>");
+          $("#logs_p")[0].scrollTop = $("#logs_p")[0].scrollHeight;
+        });
+
+        function closeSocket() {
+          socket.close();
+          $('#logs_p').html("");
+          $.get("/nologs",function(data){
+            $('#logs').modal('close');
+          });
+        }
+
       </script>
     </div>
   </div>

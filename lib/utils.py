@@ -1,6 +1,9 @@
 from math       import gcd
 from datetime   import datetime as dt
 from colorama   import Fore, Back, Style
+from tailer     import follow
+from threading  import Thread
+from time       import sleep
 import re, struct, socket, logging
 
 def deformalize(form):
@@ -76,10 +79,34 @@ class Pusher:
     def __init__(self,socketio,talkers=[]):
         self.socketio = socketio
         self.talkers = talkers
+        self.logging = True
+        self.log_thread = None
 
     def push(self, sentence, sid=0, color="#ffffff"):
         self.socketio.emit('feed', {"sentence": sentence, "color":color}, namespace='/'+re.sub("\D","_",sid))
         
+    def logs(self):
+        self.logging = True
+        self.log_thread = Thread(target=self.logger,name="Log pusher")
+        self.log_thread.start()
+        pprint("Starting log feed") # toa actually send the close signal :)
+
+    def logger(self):
+        for line in follow(open('log/nmea_muxer.log')):
+            if self.logging:
+                self.socketio.emit('logline', {"line": line}, namespace='/livelogs')
+            else:
+                return
+
+    def nologs(self):
+        self.logging = False
+        pprint("Stopping log feed") # to actually send the close signal :)
+        if self.log_thread:
+            while self.log_thread.is_alive():
+                sleep(0.1)
+            self.log_thread.join()
+            self.log_thread = None
+
     def reload(self):
         self.socketio.emit('reset', {}, namespace="/general")
 
