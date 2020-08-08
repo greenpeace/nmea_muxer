@@ -65,28 +65,30 @@ class Listener:
         self.status = "INIT"
 
     def restart(self):
-        if not self.status == "PAUSED":
-            self.started_at = dt.now()
-            self.reader = None
-            pprint('Restarting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
-            if self.thread:
-                resilient = self.resilient
-                self.alive = False
-                self.go_on = False
-                self.resilient = False
-                self.thread.join()
-                self.roadkills += 1
-                while self.thread.is_alive():
-                    sleep(0.1)
-                self.resilient = resilient
+        self.reader = None
+        if self.thread:
+            resilient = self.resilient
+            self.alive = False
+            self.go_on = False
+            self.resilient = False
+            self.thread.join()
+            self.roadkills += 1
+            while self.thread.is_alive():
+                sleep(0.1)
+            self.resilient = resilient
+        if self.loop:
+            self.loop.stop()
+            while self.loop.is_running():
+                sleep(0.1)
             if self.loop:
-                self.loop.stop()
-                while self.loop.is_running():
+                self.loop.close()
+                while not self.loop.is_closed():
                     sleep(0.1)
-                if self.loop:
-                    self.loop.close()
-                    while not self.loop.is_closed():
-                        sleep(0.1)
+        if self.status == "PAUSED":
+            pass
+        else:
+            self.started_at = dt.now()
+            pprint('Restarting            {}:{}{}{} {}'.format(self.listen_address[0].rjust(15," "), Style.BRIGHT, str(self.listen_address[1]).ljust(5," "), Fore.BLUE, self.name), "LISTENER", "INFO")
             self.loop = asyncio.new_event_loop()
             self.thread = Thread(target=self.async_start,name="Listener: "+self.name+" "+str(self.roadkills))
             self.alive = True
