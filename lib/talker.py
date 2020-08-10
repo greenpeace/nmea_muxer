@@ -75,37 +75,38 @@ class Talker:
                 pass
 
     def restart(self):
-        self.started_at = dt.now()
-        self.alive = False
-        self.resilience_alive = False
-        self.uptime += (dt.now() - self.started_at).total_seconds()
-        self.close_clients()
-        if self.socket:
-            try:
-                self.socket.shutdown(socket.SHUT_RDWR)
-            except:
-                pass
-            try:
-                self.socket.close()
-            except:
-                pass
-        if self.thread:
-            self.thread.join()
-            while self.thread.is_alive():
-                sleep(0.1)
-        try:
-            self.socket.bind(self.bind_address)
-            self.status = "UP"
-            self.socket.listen()
-            pprint('Restarting            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
-            self.alive = True
-            self.go_on = True
-            self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.roadkills))
-            self.thread.start()
-        except Exception as err:
+        if self.resilience_alive:
+            self.started_at = dt.now()
             self.alive = False
-            self.go_on = False
-            pass
+            self.resilience_alive = False
+            self.uptime += (dt.now() - self.started_at).total_seconds()
+            self.close_clients()
+            if self.socket:
+                try:
+                    self.socket.shutdown(socket.SHUT_RDWR)
+                except:
+                    pass
+                try:
+                    self.socket.close()
+                except:
+                    pass
+            if self.thread:
+                self.thread.join()
+                while self.thread.is_alive():
+                    sleep(0.1)
+            try:
+                self.socket.bind(self.bind_address)
+                self.status = "UP"
+                self.socket.listen()
+                pprint('Restarting            {}:{}{}{} {}'.format(self.bind_address[0].rjust(15," "), Style.BRIGHT, str(self.bind_address[1]).ljust(5," "), Fore.CYAN, self.name), " TALKER ", "INFO")
+                self.alive = True
+                self.go_on = True
+                self.thread = Thread(target=self.process,name="Talker: "+self.name+" "+str(self.roadkills))
+                self.thread.start()
+            except Exception as err:
+                self.alive = False
+                self.go_on = False
+                pass
 
         self.resilience_alive = True
         if not self.resilience_thread:
