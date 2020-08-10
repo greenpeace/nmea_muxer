@@ -115,7 +115,7 @@
       console.log("reboot")
       e.preventDefault();
       $("#loading").fadeIn(500)
-      $.post("/reboot",{},function(data){
+      $.post("/reboot",{"message":"Reboot requested by web client"},function(data){
         console.log(data)
         if (data == "ack") {
           $.get("/");
