@@ -174,7 +174,8 @@ class Talker:
                 client.close()
             except:
                 pass
-            self.clients.remove(client)
+            if client in self.clients:
+                self.clients.remove(client)
 
     def emit(self,sentence,color,force=False):
         if self.verbose:
@@ -189,18 +190,28 @@ class Talker:
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
+                        if len(self.clients) == 0:
+                            self.reboot_thread = Thread(target=self.reboot,name="Talker (reboot): "+self.name)
+                            self.reboot_thread.start()
                     elif err.errno in [9,110]:
                         pprint('Disconnecting         {}:{}{}'.format(client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "INFO")
                         client.shutdown(socket.SHUT_RDWR)
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
+                        if len(self.clients) == 0:
+                            self.reboot_thread = Thread(target=self.reboot,name="Talker (reboot): "+self.name)
+                            self.reboot_thread.start()
+
                     else:
                         pprint('EXCEPTION             {} {}:{}{}'.format(err,client.getpeername()[0].rjust(15," "),Style.BRIGHT,str(client.getpeername()[1]).ljust(5," ")), " CLIENT ", "ERROR")
                         client.shutdown(socket.SHUT_RDWR)
                         client.close()
                         if client in self.clients:
                             self.clients.remove(client)
+                        if len(self.clients) == 0:
+                            self.reboot_thread = Thread(target=self.reboot,name="Talker (reboot): "+self.name)
+                            self.reboot_thread.start()
             if self.pusher and self.push:
                 self.pusher.push(sentence.decode().strip(),self.id,color)
 

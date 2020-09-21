@@ -102,10 +102,13 @@ class Pusher:
         self.logging = False
         pprint("Stopping log feed") # to actually send the close signal :)
         if self.log_thread:
-            while self.log_thread.is_alive():
-                sleep(0.1)
-            self.log_thread.join()
-            self.log_thread = None
+            try:
+                while self.log_thread.is_alive():
+                    sleep(0.1)
+                self.log_thread.join()
+                self.log_thread = None
+            except:
+                pass
 
     def reload(self):
         self.socketio.emit('reset', {}, namespace="/general")
